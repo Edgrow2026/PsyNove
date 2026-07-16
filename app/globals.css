@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-display), serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-sinhala: var(--font-sinhala), sans-serif;
+  --font-tamil: var(--font-tamil), sans-serif;
+
+  /* Color Palette Tokens - Light Theme */
+  --color-ink-navy: #1E3A45;
+  --color-ink-muted: #FFFFFF;
+  --color-warm-turmeric: #ECC09B;
+  --color-sage: #8DAA9D;
+  --color-paper: #FAF9F5;
+  --color-blush: #F2D5D5;
+  --color-hairline: #E4E3DC;
+  --color-white: #FFFFFF;
+}
+
+@layer utilities {
+  .font-sinhala {
+    font-family: var(--font-sinhala), sans-serif;
+  }
+  .font-tamil {
+    font-family: var(--font-tamil), sans-serif;
+  }
+  .font-display {
+    font-family: var(--font-display), serif;
+  }
+}

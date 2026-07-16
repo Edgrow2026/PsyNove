@@ -1,0 +1,28 @@
+{
+  "name": "PsyNova Consultation Platform",
+  "short_name": "PsyNova",
+  "description": "ශ්‍රී ලංකාවේ ප්‍රමුඛතම මනෝ වෛද්‍ය උපදේශන සේවාව | Sri Lanka's Premium Psychiatrist Consultation Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/psynova192/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/psynova512/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/psynovamask/512/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
