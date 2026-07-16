@@ -70,6 +70,7 @@ export default function HomePage() {
 
   // Active Session state
   const [activeSessionRoom, setActiveSessionRoom] = useState<Booking | null>(null);
+  const [activeVideoRoom, setActiveVideoRoom] = useState<Booking | null>(null);
   const [sessionReportNotes, setSessionReportNotes] = useState('');
   const [sessionSuccessMsg, setSessionSuccessMsg] = useState(false);
 
@@ -203,49 +204,119 @@ export default function HomePage() {
     }
   };
 
-  const handleProcessPayment = () => {
+  const completePaidBooking = () => {
+    if (!paymentPendingBooking) return;
+    const fee = paymentPendingBooking.fee;
+    const commission = Math.round(fee * (state.config.commissionRate / 100));
+    const total = fee + commission;
+
+    store.createBooking({
+      clientId: state.loggedInUserId || "client-1",
+      clientName: state.clients.find(c => c.id === state.loggedInUserId)?.name || "Kavindu Wickramasinghe",
+      clientPhone: state.clients.find(c => c.id === state.loggedInUserId)?.phone || "+94771234567",
+      clientNIC: state.clients.find(c => c.id === state.loggedInUserId)?.nic || "199428392019V",
+      psychiatristId: paymentPendingBooking.docId,
+      psychiatristName: paymentPendingBooking.docName,
+      date: paymentPendingBooking.date,
+      time: paymentPendingBooking.time,
+      fee,
+      commission,
+      total,
+      status: 'paid',
+    });
+
+    setPayStatus('success');
+    setTimeout(() => {
+      setShowPaymentModal(false);
+      setPaymentPendingBooking(null);
+      setBookingSlot(null);
+      setPayStatus('idle');
+      setCardNumber('');
+      setCardExpiry('');
+      setCardCVV('');
+    }, 2000);
+  };
+
+  const loadPayHereScript = () => {
+    if (typeof window === 'undefined') return Promise.reject();
+    if ((window as any).payhere) return Promise.resolve();
+
+    return new Promise<void>((resolve, reject) => {
+      const existing = document.getElementById('payhere-sdk');
+      if (existing) {
+        existing.addEventListener('load', () => resolve());
+        existing.addEventListener('error', reject);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'payhere-sdk';
+      script.src = 'https://www.payhere.lk/lib/payhere.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = reject;
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleProcessPayment = async () => {
     if (!paymentPendingBooking) return;
     setPayStatus('processing');
 
+    const fee = paymentPendingBooking.fee;
+    const commission = Math.round(fee * (state.config.commissionRate / 100));
+    const total = fee + commission;
+    const activeClient = state.clients.find(c => c.id === state.loggedInUserId) || state.clients[0];
+    const orderId = `PSYNOVA-${Date.now()}`;
+
+    try {
+      const res = await fetch('/api/payhere/hash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, amount: total, currency: 'LKR' }),
+      });
+      const payhereConfig = await res.json();
+
+      if (payhereConfig.configured) {
+        await loadPayHereScript();
+        const payhere = (window as any).payhere;
+
+        payhere.onCompleted = () => completePaidBooking();
+        payhere.onDismissed = () => setPayStatus('idle');
+        payhere.onError = () => setPayStatus('failed');
+
+        payhere.startPayment({
+          sandbox: payhereConfig.sandbox,
+          merchant_id: payhereConfig.merchantId,
+          return_url: payhereConfig.returnUrl,
+          cancel_url: payhereConfig.cancelUrl,
+          notify_url: payhereConfig.notifyUrl,
+          order_id: payhereConfig.orderId,
+          items: `PsyNova consultation with ${paymentPendingBooking.docName}`,
+          amount: payhereConfig.amount,
+          currency: payhereConfig.currency,
+          hash: payhereConfig.hash,
+          first_name: activeClient?.name?.split(' ')[0] || 'PsyNova',
+          last_name: activeClient?.name?.split(' ').slice(1).join(' ') || 'Client',
+          email: activeClient?.email || 'client@psynova.lk',
+          phone: activeClient?.phone || '+94770000000',
+          address: activeClient?.district || 'Colombo',
+          city: activeClient?.district || 'Colombo',
+          country: 'Sri Lanka',
+        });
+        return;
+      }
+    } catch (error) {
+      console.warn('PayHere checkout unavailable, using local simulator fallback.', error);
+    }
+
     setTimeout(() => {
-      // Simulate 85% success, 15% fail if card credentials look strange
       if (paymentMethod === 'card' && cardNumber.length < 12) {
         setPayStatus('failed');
         return;
       }
-
-      // Success flow
-      const fee = paymentPendingBooking.fee;
-      const commission = Math.round(fee * (state.config.commissionRate / 100));
-      const total = fee + commission;
-
-      store.createBooking({
-        clientId: state.loggedInUserId || "client-1",
-        clientName: state.clients.find(c => c.id === state.loggedInUserId)?.name || "Kavindu Wickramasinghe",
-        clientPhone: state.clients.find(c => c.id === state.loggedInUserId)?.phone || "+94771234567",
-        clientNIC: state.clients.find(c => c.id === state.loggedInUserId)?.nic || "199428392019V",
-        psychiatristId: paymentPendingBooking.docId,
-        psychiatristName: paymentPendingBooking.docName,
-        date: paymentPendingBooking.date,
-        time: paymentPendingBooking.time,
-        fee,
-        commission,
-        total,
-        status: 'paid',
-      });
-
-      setPayStatus('success');
-      setTimeout(() => {
-        setShowPaymentModal(false);
-        setPaymentPendingBooking(null);
-        setBookingSlot(null);
-        setPayStatus('idle');
-        setCardNumber('');
-        setCardExpiry('');
-        setCardCVV('');
-      }, 2000);
-
-    }, 2000);
+      completePaidBooking();
+    }, 1200);
   };
 
   // Doctor Action
@@ -1177,8 +1248,7 @@ export default function HomePage() {
                             {booking.status === 'paid' && (
                               <button
                                 onClick={() => {
-                                  alert(`Starting video stream via encrypted peer-to-peer connection: ${booking.meetingLink}\n\nNo recording is stored by PsyNova.`);
-                                  window.open(booking.meetingLink, '_blank');
+                                  setActiveVideoRoom(booking);
                                 }}
                                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer transition-all"
                               >
@@ -1379,8 +1449,7 @@ export default function HomePage() {
                               <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end space-y-1.5 sm:space-y-0 sm:space-x-2">
                                 <button
                                   onClick={() => {
-                                    alert(`Starting Tele-health Room via encrypted peer-to-peer Jitsi Link:\n${booking.meetingLink}`);
-                                    window.open(booking.meetingLink, '_blank');
+                                    setActiveVideoRoom(booking);
                                   }}
                                   className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer transition-all"
                                 >
@@ -2060,7 +2129,36 @@ export default function HomePage() {
           </div>
         </div>
       )}
-                        {/* 3. ACTIVE CONSULTATION CLINICAL REPORT PANEL */}
+
+      {/* 3. LIVE JITSI CONSULTATION ROOM */}
+      {activeVideoRoom && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 p-3 sm:p-6 animate-fade-in flex flex-col">
+          <div className="bg-white border border-hairline rounded-2xl shadow-2xl overflow-hidden flex-1 flex flex-col">
+            <div className="bg-paper border-b border-hairline p-4 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-1 rounded-md uppercase">
+                  Jitsi Meet Live Room
+                </span>
+                <h3 className="font-bold text-ink-navy text-sm mt-1 font-display">{activeVideoRoom.psychiatristName} · {activeVideoRoom.clientName}</h3>
+              </div>
+              <button
+                onClick={() => setActiveVideoRoom(null)}
+                className="bg-white border border-hairline px-3 py-2 rounded-xl text-xs font-bold text-ink-navy hover:border-warm-turmeric"
+              >
+                Exit Room
+              </button>
+            </div>
+            <iframe
+              src={activeVideoRoom.meetingLink}
+              title="PsyNova Jitsi consultation room"
+              className="w-full flex-1 min-h-[70vh] bg-slate-900"
+              allow="camera; microphone; fullscreen; display-capture; autoplay"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 4. ACTIVE CONSULTATION CLINICAL REPORT PANEL */}
       {activeSessionRoom && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="consultation-modal">
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-hairline text-xs overflow-hidden text-slate-700 font-sans">
