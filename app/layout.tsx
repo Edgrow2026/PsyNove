@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Fraunces, Noto_Sans_Sinhala, Noto_Sans_Tamil } from 'next/font/google';
 import './globals.css';
 
@@ -34,6 +34,22 @@ export const metadata: Metadata = {
   title: 'PsyNova - Online Psychiatrist Consultation Platform',
   description: 'Sri Lanka’s premium, secure, and multi-lingual online psychiatry booking platform.',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'PsyNova',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icon-180.png', sizes: '180x180', type: 'image/png' }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#1E3A45',
 };
 
 export default function RootLayout({
