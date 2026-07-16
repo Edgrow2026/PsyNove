@@ -1,14 +1,12 @@
-const CACHE_NAME = 'psynova-v1';
+const CACHE_NAME = 'psynova-v2';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/about',
-  '/support',
-  '/terms',
-  '/privacy',
-  '/globals.css',
-  '/manifest.json'
+  OFFLINE_URL,
+  '/manifest.json',
+  '/icon-180.png',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,6 +45,15 @@ self.addEventListener('fetch', (event) => {
     event.request.method !== 'GET'
   ) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // For app pages, use network-first so dev/tunnel sessions do not serve an
+  // old HTML shell with missing Next.js chunks, which makes buttons look dead.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
+    );
     return;
   }
 
