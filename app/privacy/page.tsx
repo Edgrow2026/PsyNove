@@ -151,6 +151,17 @@ export default function PrivacyPage() {
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{privacyTexts.rightsBody}</p>
           </div>
 
+          <div className="space-y-3 border-t border-hairline pt-5">
+            <h2 className="text-lg font-bold text-ink-navy">7. Security, Minors, Cookies, Updates & Contact</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Security:</strong> sensitive records require encryption, access control, and breach notification before production launch.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Children/Minors:</strong> independent registration is intended for adults 18+. Guardian workflows require legal review.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Cookies:</strong> essential app preference storage may be used for language and PWA behavior.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Policy Updates:</strong> material privacy changes should be shown in-app and through SMS where required.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3 sm:col-span-2"><strong>Contact:</strong> privacy and data-rights requests can be routed to support@psynova.lk or the platform compliance desk.</p>
+            </div>
+          </div>
+
         </div>
 
       </main>

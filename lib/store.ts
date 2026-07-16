@@ -15,6 +15,8 @@ export interface Psychiatrist {
   boostExpiresAt?: string;
   availableSlots: string[]; // ISO string of datetimes
   bio: string;
+  slmcDocumentName?: string;
+  deactivatedAt?: string;
 }
 
 export interface ClientProfile {
@@ -25,6 +27,8 @@ export interface ClientProfile {
   email: string;
   district: string;
   languages: string[];
+  password?: string;
+  suspended?: boolean;
   deactivatedAt?: string; // ISO string if deactivated
 }
 
@@ -64,6 +68,9 @@ export interface SystemConfig {
   smsSenderId: string;
   lankaPayEnabled: boolean;
   cardPaymentEnabled: boolean;
+  reminderLeadHours: number;
+  boostPackageLkr: number;
+  adminAccounts: { id: string; name: string; role: string; permissions: string[] }[];
 }
 
 export interface AppState {
@@ -179,7 +186,8 @@ const INITIAL_CLIENTS: ClientProfile[] = [
     phone: "+94771234567",
     email: "kavindu@gmail.com",
     district: "Colombo",
-    languages: ["Sinhala", "English"]
+    languages: ["Sinhala", "English"],
+    password: "123456"
   },
   {
     id: "client-2",
@@ -188,7 +196,8 @@ const INITIAL_CLIENTS: ClientProfile[] = [
     phone: "+94719876543",
     email: "tharushi@gmail.com",
     district: "Gampaha",
-    languages: ["Sinhala"]
+    languages: ["Sinhala"],
+    password: "123456"
   }
 ];
 
@@ -254,7 +263,17 @@ const DEFAULT_STATE: AppState = {
     smsGatewayUrl: "https://api.notify.lk/send",
     smsSenderId: "PsyNovaSMS",
     lankaPayEnabled: true,
-    cardPaymentEnabled: true
+    cardPaymentEnabled: true,
+    reminderLeadHours: 24,
+    boostPackageLkr: 5000,
+    adminAccounts: [
+      {
+        id: "admin-1",
+        name: "Platform Admin",
+        role: "Compliance Officer",
+        permissions: ["SLMC verification", "Refund approval", "Complaint resolution"]
+      }
+    ]
   },
   smsInbox: []
 };
@@ -276,6 +295,12 @@ class StateStore {
           this.save();
         }
       } else {
+        const browserLang = navigator.language.toLowerCase();
+        this.state.currentLanguage = browserLang.startsWith('ta')
+          ? 'ta'
+          : browserLang.startsWith('en')
+            ? 'en'
+            : 'si';
         this.save();
       }
     }
@@ -308,6 +333,13 @@ class StateStore {
     this.save();
   }
 
+  public loginClient(phone: string, password: string): boolean {
+    const client = this.state.clients.find(c => c.phone === phone && c.password === password && !c.suspended);
+    if (!client) return false;
+    this.setRole('client', client.id);
+    return true;
+  }
+
   public setRole(role: 'guest' | 'client' | 'psychiatrist' | 'admin' | 'superadmin', userId: string | null = null) {
     this.state.currentRole = role;
     this.state.loggedInUserId = userId;
@@ -338,6 +370,14 @@ class StateStore {
     this.save();
   }
 
+  public updateDoctorProfile(docId: string, updates: Partial<Psychiatrist>) {
+    const doc = this.state.psychiatrists.find(d => d.id === docId);
+    if (doc) {
+      Object.assign(doc, updates);
+      this.save();
+    }
+  }
+
   public addSlot(docId: string, slot: string) {
     const doc = this.state.psychiatrists.find(d => d.id === docId);
     if (doc) {
@@ -358,6 +398,14 @@ class StateStore {
     }
   }
 
+  public deactivateDoctor(docId: string) {
+    const doc = this.state.psychiatrists.find(d => d.id === docId);
+    if (doc) {
+      doc.deactivatedAt = new Date().toISOString();
+      this.save();
+    }
+  }
+
   // Client functions
   public registerClient(cli: Omit<ClientProfile, 'id'>) {
     const id = `client-${Date.now()}`;
@@ -372,6 +420,22 @@ class StateStore {
     const cli = this.state.clients.find(c => c.id === clientId);
     if (cli) {
       cli.deactivatedAt = new Date().toISOString();
+      this.save();
+    }
+  }
+
+  public updateClient(clientId: string, updates: Partial<ClientProfile>) {
+    const cli = this.state.clients.find(c => c.id === clientId);
+    if (cli) {
+      Object.assign(cli, updates);
+      this.save();
+    }
+  }
+
+  public setClientSuspended(clientId: string, suspended: boolean) {
+    const cli = this.state.clients.find(c => c.id === clientId);
+    if (cli) {
+      cli.suspended = suspended;
       this.save();
     }
   }
@@ -416,8 +480,23 @@ class StateStore {
     const b = this.state.bookings.find(x => x.id === bookingId);
     if (b) {
       b.status = 'refunded';
+      this.sendSimulatedSMS(
+        b.clientPhone,
+        `[PsyNova] Refund approved for booking #${b.id}. The payment gateway settlement is now marked for manual processing.`
+      );
       this.save();
     }
+  }
+
+  public sendAppointmentReminder(bookingId: string) {
+    const b = this.state.bookings.find(x => x.id === bookingId);
+    if (b) {
+      this.sendSimulatedSMS(
+        b.clientPhone,
+        `[PsyNova] Reminder: Your consultation with ${b.psychiatristName} is scheduled on ${b.date} at ${b.time}. Link: ${b.meetingLink}`
+      );
+    }
+    this.save();
   }
 
   public completeBooking(bookingId: string, notes: string) {
@@ -461,6 +540,10 @@ class StateStore {
     if (cmp) {
       cmp.status = 'resolved';
       cmp.resolutionDetails = resolution;
+      this.sendSimulatedSMS(
+        "+94770000000",
+        `[PsyNova] Complaint #${id} resolved. Decision: ${resolution}`
+      );
       this.save();
     }
   }
@@ -468,6 +551,16 @@ class StateStore {
   // Admin Configs
   public updateConfig(newConfig: Partial<SystemConfig>) {
     this.state.config = { ...this.state.config, ...newConfig };
+    this.save();
+  }
+
+  public addAdminAccount(name: string, role: string, permissions: string[]) {
+    this.state.config.adminAccounts.push({
+      id: `admin-${Date.now()}`,
+      name,
+      role,
+      permissions
+    });
     this.save();
   }
 

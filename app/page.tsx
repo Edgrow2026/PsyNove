@@ -42,6 +42,7 @@ export default function HomePage() {
   // Doctor Registration Form
   const [docName, setDocName] = useState('');
   const [docSLMC, setDocSLMC] = useState('');
+  const [docSLMCDocument, setDocSLMCDocument] = useState('');
   const [docFee, setDocFee] = useState<number>(3500);
   const [docDistrict, setDocDistrict] = useState('Colombo');
   const [docLanguages, setDocLanguages] = useState<('Sinhala' | 'Tamil' | 'English')[]>(['Sinhala']);
@@ -50,6 +51,7 @@ export default function HomePage() {
 
   // Payment Flow State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentCountdown, setPaymentCountdown] = useState(300);
   const [paymentPendingBooking, setPaymentPendingBooking] = useState<{
     docId: string;
     docName: string;
@@ -110,12 +112,30 @@ export default function HomePage() {
     // Fee range filter
     const matchFee = doc.fee <= maxFee;
 
-    return matchSearch && matchDistrict && matchLanguage && matchDate && matchFee;
+    return doc.slmcVerified && !doc.deactivatedAt && matchSearch && matchDistrict && matchLanguage && matchDate && matchFee;
   });
 
   // Split into Boosted and Normal
   const boostedDocs = filteredDoctors.filter(d => d.isBoosted && d.slmcVerified).slice(0, 6);
   const regularDocs = filteredDoctors.filter(d => !d.isBoosted || !d.slmcVerified);
+
+  useEffect(() => {
+    if (!showPaymentModal || !paymentPendingBooking) return;
+    const timer = window.setInterval(() => {
+      setPaymentCountdown((prev) => {
+        if (prev <= 1) {
+          window.clearInterval(timer);
+          setPayStatus('failed');
+          setShowPaymentModal(false);
+          setPaymentPendingBooking(null);
+          alert('Payment window expired. The appointment slot has been released.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [showPaymentModal, paymentPendingBooking]);
 
   const handleBookTrigger = (doc: Psychiatrist, slotStr: string) => {
     // 1. If unauthenticated, trigger registration/login flow
@@ -136,6 +156,7 @@ export default function HomePage() {
         date: datePart,
         time: formatTimeStr(timePart),
       });
+      setPaymentCountdown(300);
       setShowPaymentModal(true);
     } else {
       alert("Please switch role to Client to book an appointment!");
@@ -162,6 +183,7 @@ export default function HomePage() {
       email: regEmail,
       district: regDistrict,
       languages: regLanguages,
+      password: regPassword,
     });
 
     setShowRegisterFlow(false);
@@ -176,6 +198,7 @@ export default function HomePage() {
         date: datePart,
         time: formatTimeStr(timePart),
       });
+      setPaymentCountdown(300);
       setShowPaymentModal(true);
     }
   };
@@ -292,12 +315,14 @@ export default function HomePage() {
       district: docDistrict,
       fee: docFee,
       slmcNumber: docSLMC,
+      slmcDocumentName: docSLMCDocument || 'SLMC-proof-upload-sandbox.pdf',
       bio: docBio,
     });
 
     // Clear form
     setDocName('');
     setDocSLMC('');
+    setDocSLMCDocument('');
     setDocQualifications('');
     setDocBio('');
 
@@ -792,6 +817,12 @@ export default function HomePage() {
                             </div>
                           </div>
                           <p className="text-[11px] text-slate-600 font-medium truncate">{doc.qualifications}</p>
+                          <Link
+                            href={`/psychiatrist/${doc.id}`}
+                            className="inline-flex text-[10px] font-bold text-amber-800 hover:text-ink-navy hover:underline"
+                          >
+                            {t.viewProfile}
+                          </Link>
                           
                           {/* Metadata pills */}
                           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -886,6 +917,12 @@ export default function HomePage() {
                             </div>
                           </div>
                           <p className="text-[11px] text-slate-600 font-medium truncate">{doc.qualifications}</p>
+                          <Link
+                            href={`/psychiatrist/${doc.id}`}
+                            className="inline-flex text-[10px] font-bold text-amber-800 hover:text-ink-navy hover:underline"
+                          >
+                            {t.viewProfile}
+                          </Link>
                           
                           {/* Metadata pills */}
                           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -999,6 +1036,18 @@ export default function HomePage() {
                   </select>
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
+                  <label className="font-bold text-slate-700">SLMC සහතිකය / Registry proof file name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="SLMC-registration-proof.pdf"
+                    value={docSLMCDocument}
+                    onChange={(e) => setDocSLMCDocument(e.target.value)}
+                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:border-warm-turmeric focus:outline-hidden"
+                  />
+                  <p className="text-[10px] text-slate-500">Sandbox mode stores the file name only. Production should upload and verify the actual PDF/image.</p>
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
                   <label className="font-bold text-slate-700">වෛද්‍ය සුදුසුකම් / Professional Qualifications</label>
                   <input 
                     type="text" 
@@ -1053,6 +1102,45 @@ export default function HomePage() {
                 </button>
               </div>
 
+              {/* Client Profile & Payment Ledger */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-paper border border-hairline rounded-2xl p-4 space-y-3">
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Profile Management</h4>
+                  {(() => {
+                    const client = state.clients.find(c => c.id === (state.loggedInUserId || 'client-1'));
+                    if (!client) return null;
+                    return (
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between"><span className="text-slate-600">Name</span><strong>{client.name}</strong></div>
+                        <div className="flex justify-between"><span className="text-slate-600">Mobile</span><strong>{client.phone}</strong></div>
+                        <div className="flex justify-between"><span className="text-slate-600">Email</span><strong>{client.email}</strong></div>
+                        <button
+                          onClick={() => {
+                            const phone = prompt('Update mobile number', client.phone);
+                            const email = prompt('Update email', client.email);
+                            if (phone && email) store.updateClient(client.id, { phone, email });
+                          }}
+                          className="bg-white border border-hairline px-3 py-2 rounded-xl font-bold hover:border-warm-turmeric"
+                        >
+                          Edit Profile
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="bg-paper border border-hairline rounded-2xl p-4 space-y-3">
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Payment History</h4>
+                  <div className="space-y-2 text-xs">
+                    {state.bookings.filter(b => b.clientId === (state.loggedInUserId || 'client-1')).map(b => (
+                      <div key={`pay-${b.id}`} className="flex justify-between bg-white border border-hairline rounded-xl p-2">
+                        <span>#{b.id} - {b.status}</span>
+                        <strong>LKR {b.total}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Booking History */}
               <div className="space-y-4">
                 <h4 className="font-extrabold text-sm text-slate-600 tracking-wider uppercase font-display">{t.sessions}</h4>
@@ -1096,6 +1184,17 @@ export default function HomePage() {
                               >
                                 <Video className="w-3 h-3" />
                                 <span>{t.joinRoom}</span>
+                              </button>
+                            )}
+                            {booking.status === 'paid' && (
+                              <button
+                                onClick={() => {
+                                  store.sendAppointmentReminder(booking.id);
+                                  alert('Appointment reminder SMS queued in sandbox log.');
+                                }}
+                                className="text-amber-800 hover:underline text-[10px] font-bold block sm:inline mt-1 sm:mt-0"
+                              >
+                                Send Reminder
                               </button>
                             )}
                             
@@ -1142,7 +1241,7 @@ export default function HomePage() {
                 {/* Boosting Package Option */}
                 <button
                   onClick={() => {
-                    if (confirm("Boost profile to home page carousel for LKR 5000? (Simulated Package Transaction)")) {
+                    if (confirm(`Boost profile to home page carousel for LKR ${state.config.boostPackageLkr}? (Simulated Package Transaction)`)) {
                       store.purchaseBoost(state.loggedInUserId || 'psy-1');
                       alert("Boost package activated! Your profile now displays in the prominent Homepage Carousel.");
                     }
@@ -1150,9 +1249,46 @@ export default function HomePage() {
                   className="mt-3 sm:mt-0 bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 w-fit shadow-xs cursor-pointer transition-all"
                 >
                   <TrendingUp className="w-3.5 h-3.5 text-ink-navy" />
-                  <span>{t.purchaseBoost} (LKR 5,000)</span>
+                  <span>{t.purchaseBoost} (LKR {state.config.boostPackageLkr})</span>
                 </button>
               </div>
+
+              {(() => {
+                const doctor = state.psychiatrists.find(d => d.id === (state.loggedInUserId || 'psy-1'));
+                if (!doctor) return null;
+                return (
+                  <div className="bg-paper border border-hairline rounded-2xl p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
+                    <div className="lg:col-span-2 space-y-2">
+                      <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Profile & SLMC Document</h4>
+                      <p className="text-slate-700 leading-relaxed">{doctor.bio}</p>
+                      <p className="text-[10px] text-slate-500">Registry proof: <strong>{doctor.slmcDocumentName || 'Verified from seed registry record'}</strong></p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => {
+                          const fee = prompt('Update consultation fee', String(doctor.fee));
+                          const bio = prompt('Update profile bio', doctor.bio);
+                          if (fee && bio) store.updateDoctorProfile(doctor.id, { fee: parseInt(fee), bio });
+                        }}
+                        className="bg-white border border-hairline px-3 py-2 rounded-xl font-bold hover:border-warm-turmeric"
+                      >
+                        Edit Profile / Fee
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(t.deactivateHoldWarning)) {
+                            store.deactivateDoctor(doctor.id);
+                            alert('Doctor account enters the 7-calendar-day hold queue.');
+                          }
+                        }}
+                        className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-xl font-bold hover:bg-red-100"
+                      >
+                        {t.deactivateAccount}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Top Row Grid: Financial Telemetry & Scheduling slots */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1321,6 +1457,55 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Client and Payment Operations */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Client Account Controls</h4>
+                  <div className="space-y-3">
+                    {state.clients.map(client => (
+                      <div key={client.id} className="bg-paper border border-hairline rounded-xl p-3 flex items-center justify-between">
+                        <div className="text-xs">
+                          <strong className="block text-ink-navy">{client.name}</strong>
+                          <span className="text-slate-600">{client.phone} · {client.district}</span>
+                          {client.deactivatedAt && <span className="block text-red-600 text-[10px]">7-day deactivation hold started {client.deactivatedAt.slice(0, 10)}</span>}
+                        </div>
+                        <button
+                          onClick={() => store.setClientSuspended(client.id, !client.suspended)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border ${
+                            client.suspended ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          {client.suspended ? 'Reactivate' : 'Suspend'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Transactions & Refund Approval</h4>
+                  <div className="space-y-3">
+                    {state.bookings.map(booking => (
+                      <div key={`admin-pay-${booking.id}`} className="bg-paper border border-hairline rounded-xl p-3 flex items-center justify-between">
+                        <div className="text-xs">
+                          <strong className="block text-ink-navy">#{booking.id} · LKR {booking.total}</strong>
+                          <span className="text-slate-600">{booking.clientName} → {booking.psychiatristName}</span>
+                          <span className="block text-[10px] text-slate-500">Commission LKR {booking.commission} · {booking.status}</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Approve manual refund for booking #${booking.id}?`)) store.refundBooking(booking.id);
+                          }}
+                          disabled={booking.status === 'refunded'}
+                          className="bg-white border border-hairline disabled:opacity-50 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:border-warm-turmeric"
+                        >
+                          {t.refundBooking}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* 1. Approvals Management */}
               <div className="space-y-4">
                 <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Mandatory SLMC Registry Auditing</h4>
@@ -1474,6 +1659,63 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4">
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Boosting & Payment Settings</h4>
+                  <div className="space-y-3 text-xs">
+                    <label className="block space-y-1">
+                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">Boost Package Price (LKR)</span>
+                      <input
+                        type="number"
+                        value={state.config.boostPackageLkr}
+                        onChange={(e) => store.updateConfig({ boostPackageLkr: parseInt(e.target.value) })}
+                        className="w-full border border-hairline rounded-lg p-2 bg-white text-ink-navy focus:ring-1 focus:ring-warm-turmeric"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between bg-white border border-hairline p-2 rounded-lg">
+                      <span className="font-semibold">LankaPay enabled</span>
+                      <input type="checkbox" checked={state.config.lankaPayEnabled} onChange={(e) => store.updateConfig({ lankaPayEnabled: e.target.checked })} />
+                    </label>
+                    <label className="flex items-center justify-between bg-white border border-hairline p-2 rounded-lg">
+                      <span className="font-semibold">Visa/Mastercard enabled</span>
+                      <input type="checkbox" checked={state.config.cardPaymentEnabled} onChange={(e) => store.updateConfig({ cardPaymentEnabled: e.target.checked })} />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4 md:col-span-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Admin Accounts & Permissions</h4>
+                    <button
+                      onClick={() => {
+                        const name = prompt('Admin name');
+                        const role = prompt('Admin role', 'Support Officer');
+                        const permissions = prompt('Permissions comma separated', 'Complaint resolution,Refund approval');
+                        if (name && role && permissions) {
+                          store.addAdminAccount(name, role, permissions.split(',').map(p => p.trim()).filter(Boolean));
+                        }
+                      }}
+                      className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-3 py-2 rounded-xl text-xs font-bold"
+                    >
+                      Create Admin
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {state.config.adminAccounts.map(admin => (
+                      <div key={admin.id} className="bg-white border border-hairline rounded-xl p-3 text-xs">
+                        <strong className="block text-ink-navy">{admin.name}</strong>
+                        <span className="text-slate-600">{admin.role}</span>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {admin.permissions.map(permission => (
+                            <span key={permission} className="bg-paper border border-hairline px-2 py-1 rounded-md text-[10px] font-bold text-slate-600">
+                              {permission}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -1562,6 +1804,7 @@ export default function HomePage() {
                         date: datePart,
                         time: formatTimeStr(timePart),
                       });
+                      setPaymentCountdown(300);
                       setShowPaymentModal(true);
                     }
                   }}
@@ -1687,7 +1930,7 @@ export default function HomePage() {
               <div className="bg-amber-50 border-l-2 border-amber-500 p-3 rounded-r-xl flex space-x-2 text-amber-800">
                 <Clock className="w-4 h-4 text-amber-655 flex-shrink-0 mt-0.5" />
                 <span className="text-[10px] leading-relaxed font-medium">
-                  {t.slotTimeoutWarning}
+                  {t.slotTimeoutWarning} Time left: {Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')}
                 </span>
               </div>
 
@@ -1720,18 +1963,20 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('card')}
+                  disabled={!state.config.cardPaymentEnabled}
                   className={`flex-1 py-2 text-center font-bold transition-all cursor-pointer text-xs ${
                     paymentMethod === 'card' ? 'bg-warm-turmeric text-ink-navy' : 'bg-paper text-slate-600'
-                  }`}
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   {t.payWithCard}
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('lankapay')}
+                  disabled={!state.config.lankaPayEnabled}
                   className={`flex-1 py-2 text-center font-bold transition-all cursor-pointer text-xs ${
                     paymentMethod === 'lankapay' ? 'bg-warm-turmeric text-ink-navy' : 'bg-paper text-slate-600'
-                  }`}
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   {t.payWithLankaPay}
                 </button>
@@ -1934,7 +2179,7 @@ export default function HomePage() {
                   required
                   rows={4}
                   value={complaintNotes}
-                  onChange={(e) => setRegPassword(e.target.value)}
+                  onChange={(e) => setComplaintNotes(e.target.value)}
                   placeholder="Provide precise details here..."
                   className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
                 />

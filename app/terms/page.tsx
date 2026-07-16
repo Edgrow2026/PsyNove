@@ -159,6 +159,18 @@ export default function TermsPage() {
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{termsTexts.lawBody}</p>
           </div>
 
+          <div className="space-y-3 border-t border-hairline pt-5">
+            <h2 className="text-lg font-bold text-ink-navy">8. Additional Platform Rules</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Account responsibility:</strong> users must keep identity, mobile, and booking details accurate and secure.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Psychiatrist obligations:</strong> doctors must maintain SLMC compliance, professional conduct, and their own video account.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Complaints:</strong> complaints are reviewed manually by admins and acknowledged through SMS.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Boosting:</strong> promotions improve visibility but do not guarantee bookings.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Prohibited conduct:</strong> fraud, abuse, impersonation, fake reviews, and platform misuse are not allowed.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Liability and changes:</strong> consultation outcomes and third-party video reliability remain outside PsyNova control; term changes should be notified in-app.</p>
+            </div>
+          </div>
+
         </div>
 
       </main>

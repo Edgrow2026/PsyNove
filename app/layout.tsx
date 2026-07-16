@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="si" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${fraunces.variable} ${notoSansSinhala.variable} ${notoSansTamil.variable} min-h-screen bg-[#0A1128] text-[#E2E8F0] antialiased`}
+        className={`${inter.variable} ${fraunces.variable} ${notoSansSinhala.variable} ${notoSansTamil.variable} min-h-screen bg-paper text-ink-navy antialiased`}
         suppressHydrationWarning
       >
         {children}

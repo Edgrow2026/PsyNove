@@ -15,6 +15,10 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
   const [state, setState] = useState<AppState>(() => store.getState());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loginPhone, setLoginPhone] = useState('+94771234567');
+  const [loginPassword, setLoginPassword] = useState('123456');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     const unsub = store.subscribe(() => {
@@ -34,6 +38,17 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
     store.setRole('guest', null);
     setUserDropdownOpen(false);
     window.location.href = '/';
+  };
+
+  const handleClientLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const ok = store.loginClient(loginPhone.trim(), loginPassword);
+    if (!ok) {
+      setLoginError('Invalid mobile/password or suspended account.');
+      return;
+    }
+    setLoginError('');
+    setLoginOpen(false);
   };
 
   const getRoleBadge = () => {
@@ -88,6 +103,18 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
           >
             {t.support}
           </Link>
+          <Link
+            href="/terms"
+            className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'terms' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
+          >
+            {t.terms}
+          </Link>
+          <Link
+            href="/privacy"
+            className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'privacy' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
+          >
+            {t.privacy}
+          </Link>
         </nav>
 
         {/* Right Action Side */}
@@ -99,7 +126,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
           {state.currentRole === 'guest' ? (
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => store.setRole('client', 'client-1')}
+                onClick={() => setLoginOpen(true)}
                 className="px-4 py-2 text-xs font-bold text-ink-navy/80 hover:text-ink-navy rounded-lg transition-all cursor-pointer"
               >
                 {t.login}
@@ -201,13 +228,15 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
             <Link href="/" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.home}</Link>
             <Link href="/about" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.about}</Link>
             <Link href="/support" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.support}</Link>
+            <Link href="/terms" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.terms}</Link>
+            <Link href="/privacy" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.privacy}</Link>
           </div>
 
           <div className="pt-3 border-t border-hairline flex items-center justify-between">
             {state.currentRole === 'guest' ? (
               <button
                 onClick={() => {
-                  store.setRole('client', 'client-1');
+                  setLoginOpen(true);
                   setMobileMenuOpen(false);
                 }}
                 className="w-full bg-warm-turmeric text-ink-navy text-center py-2.5 text-xs font-bold rounded-full cursor-pointer shadow-lg shadow-warm-turmeric/10"
@@ -243,6 +272,46 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
               </div>
             )}
           </div>
+        </div>
+      )}
+      {loginOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <form onSubmit={handleClientLogin} className="bg-white rounded-2xl border border-hairline shadow-2xl max-w-sm w-full p-5 space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-hairline pb-3">
+              <div>
+                <h3 className="font-bold text-ink-navy text-base font-display">{t.login}</h3>
+                <p className="text-slate-600 text-[11px]">Mobile number + password client login</p>
+              </div>
+              <button type="button" onClick={() => setLoginOpen(false)} className="text-slate-500 hover:text-ink-navy font-bold">
+                Close
+              </button>
+            </div>
+            {loginError && (
+              <div className="bg-red-50 text-red-700 border border-red-200 p-2.5 rounded-xl font-semibold">
+                {loginError}
+              </div>
+            )}
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Mobile Number</label>
+              <input
+                value={loginPhone}
+                onChange={(e) => setLoginPhone(e.target.value)}
+                className="w-full bg-paper border border-hairline rounded-xl p-2.5 text-ink-navy focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Password</label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="w-full bg-paper border border-hairline rounded-xl p-2.5 text-ink-navy focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
+              />
+            </div>
+            <button type="submit" className="w-full bg-warm-turmeric text-ink-navy py-2.5 rounded-xl font-bold hover:bg-warm-turmeric/90">
+              {t.login}
+            </button>
+          </form>
         </div>
       )}
     </header>
