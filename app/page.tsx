@@ -6,13 +6,18 @@ import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import SimulatorSettings from '../components/SimulatorSettings';
 import PwaRegister from '../components/PwaRegister';
+import ClientRegistrationModal from '../components/booking/ClientRegistrationModal';
+import ComplaintModal from '../components/booking/ComplaintModal';
+import PaymentModal from '../components/payment/PaymentModal';
+import SessionReportModal from '../components/consultation/SessionReportModal';
+import VideoRoomModal from '../components/consultation/VideoRoomModal';
 import { store, AppState, Psychiatrist, Booking, Complaint, ClientProfile } from '../lib/store';
 import { translations, Language } from '../lib/translations';
 import { 
   Search, Calendar, MapPin, Globe, UserCheck, DollarSign, 
-  CheckCircle2, Clock, ShieldAlert, Plus, Star, Trash2, 
+  CheckCircle2, ShieldAlert, Plus, Star, Trash2, 
   TrendingUp, BarChart3, FileSpreadsheet, AlertTriangle, 
-  Activity, Video, UserX, AlertCircle, HeartHandshake, LogIn
+  Activity, Video, UserX, AlertCircle, HeartHandshake
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -171,6 +176,30 @@ export default function HomePage() {
     const ampm = hr >= 12 ? 'PM' : 'AM';
     const displayHr = hr % 12 || 12;
     return `${displayHr}:${m} ${ampm}`;
+  };
+
+  const closeRegisterFlow = () => {
+    setShowRegisterFlow(false);
+    setSelectedDoc(null);
+    setBookingSlot(null);
+  };
+
+  const handleUseSandboxClient = () => {
+    store.setRole('client', 'client-1');
+    setShowRegisterFlow(false);
+
+    if (selectedDoc && bookingSlot) {
+      const [datePart, timePart] = bookingSlot.split('T');
+      setPaymentPendingBooking({
+        docId: selectedDoc.id,
+        docName: selectedDoc.name,
+        fee: selectedDoc.fee,
+        date: datePart,
+        time: formatTimeStr(timePart),
+      });
+      setPaymentCountdown(300);
+      setShowPaymentModal(true);
+    }
   };
 
   const handleClientRegisterSubmit = (e: React.FormEvent) => {
@@ -1829,470 +1858,88 @@ export default function HomePage() {
 
       {/* --- ALL MODALS & FLYOUTS (Single-screen architecture) --- */}
 
-      {/* 1. REGISTER FLOW FLYOUT MODAL */}
       {showRegisterFlow && selectedDoc && bookingSlot && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="register-flow-modal">
-          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-hairline text-slate-700">
-            
-            {/* Header */}
-            <div className="p-5 border-b border-hairline flex justify-between items-center bg-paper">
-              <div className="space-y-0.5">
-                <h3 className="font-bold text-ink-navy text-sm sm:text-base font-display">සේවාලාභී ගිණුම සාදන්න / Patient Registration</h3>
-                <p className="text-slate-500 text-[11px] font-sans">You must verify your identity to reserve a psychiatric appointment.</p>
-              </div>
-              <button 
-                onClick={() => {
-                  setShowRegisterFlow(false);
-                  setSelectedDoc(null);
-                  setBookingSlot(null);
-                }}
-                className="text-slate-600 hover:text-ink-navy cursor-pointer text-xs font-bold transition-colors font-sans"
-              >
-                Close
-              </button>
-            </div>
-
-            {/* Quick Demo Login Option */}
-            <div className="px-5 pt-4 font-sans">
-              <div className="bg-paper border border-hairline p-3.5 rounded-xl flex items-center justify-between text-xs">
-                <div className="space-y-0.5">
-                  <span className="font-bold text-ink-navy block">Quick Sandbox Account Access</span>
-                  <span className="text-[10px] text-slate-600">Immediately logs in as client &apos;Kavindu&apos; to skip forms.</span>
-                </div>
-                <button
-                  onClick={() => {
-                    store.setRole('client', 'client-1');
-                    setShowRegisterFlow(false);
-                    // Open booking payment right away
-                    if (selectedDoc && bookingSlot) {
-                      const [datePart, timePart] = bookingSlot.split('T');
-                      setPaymentPendingBooking({
-                        docId: selectedDoc.id,
-                        docName: selectedDoc.name,
-                        fee: selectedDoc.fee,
-                        date: datePart,
-                        time: formatTimeStr(timePart),
-                      });
-                      setPaymentCountdown(300);
-                      setShowPaymentModal(true);
-                    }
-                  }}
-                  className="bg-warm-turmeric text-ink-navy text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer hover:bg-warm-turmeric/90 transition-all"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Use Kavindu</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleClientRegisterSubmit} className="p-5 space-y-4 text-xs font-sans">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">සම්පූර්ණ නම / Full Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    placeholder="Kavindu Perera"
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">NIC / Passport Number</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={regNIC}
-                    onChange={(e) => setRegNIC(e.target.value)}
-                    placeholder="199428392019V"
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">ජංගම දුරකථනය / Mobile Phone</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    placeholder="+94 77 123 4567"
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">විද්‍යුත් තැපෑල / Email</label>
-                  <input 
-                    type="email" 
-                    required 
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="kavindu@gmail.com"
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">දිස්ත්‍රික්කය / District</label>
-                  <select
-                    value={regDistrict}
-                    onChange={(e) => setRegDistrict(e.target.value)}
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden scheme-light"
-                  >
-                    {districtList.map(dist => (
-                      <option key={dist} value={dist}>{t.districts[dist] || dist}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1 font-sans">
-                  <label className="font-bold text-slate-700">මුරපදය / Password</label>
-                  <input 
-                    type="password" 
-                    required 
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                className="w-full bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy font-bold py-3 rounded-xl transition-all duration-300 tracking-wide cursor-pointer text-center shadow-xs font-sans"
-              >
-                Register & Proceed To Checkout
-              </button>
-            </form>
-          </div>
-        </div>
+        <ClientRegistrationModal
+          selectedDoc={selectedDoc}
+          bookingSlot={bookingSlot}
+          districtList={districtList}
+          t={t}
+          regName={regName}
+          regNIC={regNIC}
+          regPhone={regPhone}
+          regEmail={regEmail}
+          regDistrict={regDistrict}
+          regPassword={regPassword}
+          setRegName={setRegName}
+          setRegNIC={setRegNIC}
+          setRegPhone={setRegPhone}
+          setRegEmail={setRegEmail}
+          setRegDistrict={setRegDistrict}
+          setRegPassword={setRegPassword}
+          onClose={closeRegisterFlow}
+          onUseSandboxClient={handleUseSandboxClient}
+          onSubmit={handleClientRegisterSubmit}
+        />
       )}
 
-      {/* 2. SECURE SIMULATED PAYMENT GATEWAY MODAL (PayHere + LankaPay) */}
       {showPaymentModal && paymentPendingBooking && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="payment-modal">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-hairline overflow-hidden text-xs text-slate-700">
-            
-            {/* Header */}
-            <div className="bg-paper text-ink-navy p-5 flex items-center justify-between border-b border-hairline font-sans">
-              <div className="space-y-0.5">
-                <span className="text-[10px] bg-warm-turmeric text-ink-navy font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider font-sans">
-                  PayHere Gateway
-                </span>
-                <h3 className="font-bold text-sm tracking-tight font-display">{t.simulatedGateway}</h3>
-              </div>
-              <button 
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  setPaymentPendingBooking(null);
-                }}
-                className="text-slate-600 hover:text-ink-navy cursor-pointer transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-
-            {/* Content body */}
-            <div className="p-5 space-y-4 font-sans">
-              
-              {/* Timeout clock alert */}
-              <div className="bg-amber-50 border-l-2 border-amber-500 p-3 rounded-r-xl flex space-x-2 text-amber-800">
-                <Clock className="w-4 h-4 text-amber-655 flex-shrink-0 mt-0.5" />
-                <span className="text-[10px] leading-relaxed font-medium">
-                  {t.slotTimeoutWarning} Time left: {Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')}
-                </span>
-              </div>
-
-              {/* Bill summaries */}
-              <div className="bg-paper p-4 rounded-xl border border-hairline space-y-2">
-                <div className="flex justify-between font-bold text-ink-navy">
-                  <span>Specialist:</span>
-                  <span>{paymentPendingBooking.docName}</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Date & Time:</span>
-                  <span>{paymentPendingBooking.date} | {paymentPendingBooking.time}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 border-t border-hairline pt-2">
-                  <span>Doctor Consultation Fee:</span>
-                  <span>LKR {paymentPendingBooking.fee}</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Platform Service commission:</span>
-                  <span>LKR {Math.round(paymentPendingBooking.fee * (state.config.commissionRate / 100))}</span>
-                </div>
-                <div className="flex justify-between text-amber-800 font-bold text-sm border-t border-hairline pt-2 font-display">
-                  <span>{t.totalAmount}:</span>
-                  <span>LKR {paymentPendingBooking.fee + Math.round(paymentPendingBooking.fee * (state.config.commissionRate / 100))}</span>
-                </div>
-              </div>
-
-              {/* Pay method tabs */}
-              <div className="flex border border-hairline rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('card')}
-                  disabled={!state.config.cardPaymentEnabled}
-                  className={`flex-1 py-2 text-center font-bold transition-all cursor-pointer text-xs ${
-                    paymentMethod === 'card' ? 'bg-warm-turmeric text-ink-navy' : 'bg-paper text-slate-600'
-                  } disabled:opacity-40 disabled:cursor-not-allowed`}
-                >
-                  {t.payWithCard}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('lankapay')}
-                  disabled={!state.config.lankaPayEnabled}
-                  className={`flex-1 py-2 text-center font-bold transition-all cursor-pointer text-xs ${
-                    paymentMethod === 'lankapay' ? 'bg-warm-turmeric text-ink-navy' : 'bg-paper text-slate-600'
-                  } disabled:opacity-40 disabled:cursor-not-allowed`}
-                >
-                  {t.payWithLankaPay}
-                </button>
-              </div>
-
-              {/* Simulated input forms */}
-              {paymentMethod === 'card' ? (
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-700">Card Number (Enter 12 digits for success, less to fail)</label>
-                    <input 
-                      type="text" 
-                      placeholder="4000 1234 5678 9010" 
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden font-mono"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-bold text-slate-700">Expiry Date</label>
-                      <input 
-                        type="text" 
-                        placeholder="12/28" 
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-bold text-slate-700">CVV</label>
-                      <input 
-                        type="password" 
-                        placeholder="•••" 
-                        value={cardCVV}
-                        onChange={(e) => setCardCVV(e.target.value)}
-                        className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-sky-50 border border-sky-200 p-3.5 rounded-xl space-y-1 text-sky-800 font-medium animate-fade-in">
-                  <span className="block font-bold">LankaPay Dynamic Routing</span>
-                  <p className="text-[10px] leading-normal font-normal text-slate-600">Your payment request will be routed dynamically through LankaPay national switch instantly. Safe, local, and direct.</p>
-                </div>
-              )}
-
-              {/* Status messages */}
-              {payStatus === 'processing' && (
-                <div className="text-center py-2 text-slate-600 font-bold flex items-center justify-center space-x-1">
-                  <span className="w-3 h-3 rounded-full bg-warm-turmeric animate-ping mr-2" />
-                  <span>Authorizing transaction via secure network...</span>
-                </div>
-              )}
-
-              {payStatus === 'success' && (
-                <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-center border border-emerald-200 font-semibold animate-pulse">
-                  {t.paymentSuccess}
-                </div>
-              )}
-
-              {payStatus === 'failed' && (
-                <div className="bg-rose-50 text-rose-800 p-3 rounded-xl text-center border border-rose-200 font-semibold">
-                  {t.paymentFailed}
-                </div>
-              )}
-
-              {/* Footer action trigger */}
-              <button
-                type="button"
-                onClick={handleProcessPayment}
-                disabled={payStatus === 'processing' || payStatus === 'success'}
-                className="w-full bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy font-bold py-2.5 rounded-xl transition-all duration-300 text-center tracking-wide cursor-pointer shadow-xs"
-              >
-                {t.confirmAndPay}
-              </button>
-
-            </div>
-
-          </div>
-        </div>
+        <PaymentModal
+          booking={paymentPendingBooking}
+          paymentCountdown={paymentCountdown}
+          commissionRate={state.config.commissionRate}
+          paymentMethod={paymentMethod}
+          cardNumber={cardNumber}
+          cardExpiry={cardExpiry}
+          cardCVV={cardCVV}
+          payStatus={payStatus}
+          lankaPayEnabled={state.config.lankaPayEnabled}
+          cardPaymentEnabled={state.config.cardPaymentEnabled}
+          t={t}
+          setPaymentMethod={setPaymentMethod}
+          setCardNumber={setCardNumber}
+          setCardExpiry={setCardExpiry}
+          setCardCVV={setCardCVV}
+          onCancel={() => {
+            setShowPaymentModal(false);
+            setPaymentPendingBooking(null);
+          }}
+          onProcessPayment={handleProcessPayment}
+        />
       )}
 
-      {/* 3. LIVE JITSI CONSULTATION ROOM */}
       {activeVideoRoom && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 p-3 sm:p-6 animate-fade-in flex flex-col">
-          <div className="bg-white border border-hairline rounded-2xl shadow-2xl overflow-hidden flex-1 flex flex-col">
-            <div className="bg-paper border-b border-hairline p-4 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-1 rounded-md uppercase">
-                  Jitsi Meet Live Room
-                </span>
-                <h3 className="font-bold text-ink-navy text-sm mt-1 font-display">{activeVideoRoom.psychiatristName} · {activeVideoRoom.clientName}</h3>
-              </div>
-              <button
-                onClick={() => setActiveVideoRoom(null)}
-                className="bg-white border border-hairline px-3 py-2 rounded-xl text-xs font-bold text-ink-navy hover:border-warm-turmeric"
-              >
-                Exit Room
-              </button>
-            </div>
-            <iframe
-              src={activeVideoRoom.meetingLink}
-              title="PsyNova Jitsi consultation room"
-              className="w-full flex-1 min-h-[70vh] bg-slate-900"
-              allow="camera; microphone; fullscreen; display-capture; autoplay"
-            />
-          </div>
-        </div>
+        <VideoRoomModal
+          booking={activeVideoRoom}
+          onClose={() => setActiveVideoRoom(null)}
+        />
       )}
 
-      {/* 4. ACTIVE CONSULTATION CLINICAL REPORT PANEL */}
       {activeSessionRoom && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="consultation-modal">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-hairline text-xs overflow-hidden text-slate-700 font-sans">
-            
-            {/* Header */}
-            <div className="bg-paper text-ink-navy p-5 flex items-center justify-between border-b border-hairline">
-              <div className="space-y-0.5">
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider font-sans">
-                  Active Consultation Room
-                </span>
-                <h3 className="font-bold text-sm tracking-tight text-ink-navy font-display">Consultation: {activeSessionRoom.clientName}</h3>
-              </div>
-              <button 
-                onClick={() => setActiveSessionRoom(null)}
-                className="text-slate-600 hover:text-ink-navy cursor-pointer transition-colors"
-              >
-                Exit Room
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-5 space-y-4">
-              <div className="bg-paper border border-hairline p-3.5 rounded-xl space-y-1">
-                <span className="block font-bold text-ink-navy">Tele-health Session Link (Jitsi Meet)</span>
-                <a 
-                  href={activeSessionRoom.meetingLink} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="text-amber-800 hover:underline block font-mono text-[10px] truncate"
-                >
-                  {activeSessionRoom.meetingLink}
-                </a>
-              </div>
-
-              {sessionSuccessMsg && (
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl font-bold text-center">
-                  {t.successMessage}
-                </div>
-              )}
-
-              <form onSubmit={handleCloseSessionWithReport} className="space-y-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">{t.submitSessionReport}</label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={sessionReportNotes}
-                    onChange={(e) => setSessionReportNotes(e.target.value)}
-                    placeholder={t.reportNotes}
-                    className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                  />
-                </div>
-
-                <div className="flex space-x-2">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy font-bold py-2.5 rounded-xl transition-all text-center cursor-pointer shadow-xs text-xs"
-                  >
-                    Close Session & Submit Clinical Record
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveComplaintBooking(activeSessionRoom);
-                      setActiveSessionRoom(null);
-                    }}
-                    className="bg-red-50 hover:bg-red-100 text-red-655 font-bold px-4 py-2.5 rounded-xl transition-all text-center border border-red-200 cursor-pointer text-xs"
-                  >
-                    File Incident
-                  </button>
-                </div>
-              </form>
-            </div>
-
-          </div>
-        </div>
+        <SessionReportModal
+          booking={activeSessionRoom}
+          notes={sessionReportNotes}
+          sessionSuccessMsg={sessionSuccessMsg}
+          t={t}
+          setNotes={setSessionReportNotes}
+          onClose={() => setActiveSessionRoom(null)}
+          onFileIncident={() => {
+            setActiveComplaintBooking(activeSessionRoom);
+            setActiveSessionRoom(null);
+          }}
+          onSubmit={handleCloseSessionWithReport}
+        />
       )}
 
-      {/* 4. DISPUTE / COMPLAINT FORM MODAL */}
       {activeComplaintBooking && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="complaint-modal">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-hairline text-xs overflow-hidden text-slate-700 font-sans">
-            
-            {/* Header */}
-            <div className="bg-red-50 text-red-750 p-5 flex items-center justify-between border-b border-red-200">
-              <div className="space-y-0.5">
-                <h3 className="font-bold text-sm tracking-tight text-red-750 font-display">{t.submitComplaint}</h3>
-                <p className="text-red-600 text-[10px] font-sans">Your grievance will be reviewed manually by PsyNova compliance officers.</p>
-              </div>
-              <button 
-                onClick={() => setActiveComplaintBooking(null)}
-                className="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
-              >
-                Close
-              </button>
-            </div>
-
-            {/* Body */}
-            <form onSubmit={handleFileComplaintSubmit} className="p-5 space-y-4">
-              {complaintSuccess && (
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl font-bold text-center">
-                  Complaint filed successfully! Check the SMS logs below to see confirmation dispatch.
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-600 font-sans">Booking Associated:</label>
-                <span className="block font-semibold text-ink-navy font-sans">
-                  Appointment #{activeComplaintBooking.id} with Dr. {activeComplaintBooking.psychiatristName}
-                </span>
-              </div>
-
-              <div className="space-y-1 font-sans">
-                <label className="font-bold text-slate-700">{t.complaintNotes}</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={complaintNotes}
-                  onChange={(e) => setComplaintNotes(e.target.value)}
-                  placeholder="Provide precise details here..."
-                  className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-red-600 text-white hover:bg-red-700 font-bold py-2.5 rounded-xl transition-all duration-300 text-center cursor-pointer shadow-xs text-xs font-sans"
-              >
-                Submit Ticket to Compliance Office
-              </button>
-            </form>
-
-          </div>
-        </div>
+        <ComplaintModal
+          booking={activeComplaintBooking}
+          complaintNotes={complaintNotes}
+          complaintSuccess={complaintSuccess}
+          t={t}
+          setComplaintNotes={setComplaintNotes}
+          onClose={() => setActiveComplaintBooking(null)}
+          onSubmit={handleFileComplaintSubmit}
+        />
       )}
 
       {/* Floating Sandbox Controls */}
