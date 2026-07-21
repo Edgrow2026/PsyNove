@@ -352,6 +352,65 @@ class StateStore {
     this.save();
   }
 
+  public syncAuthenticatedProfile(profile: {
+    id: string;
+    role: 'client' | 'psychiatrist' | 'admin' | 'superadmin';
+    full_name: string | null;
+    phone: string | null;
+    email: string | null;
+    district: string | null;
+  }) {
+    if (profile.role === 'client') {
+      const existing = this.state.clients.find(c => c.id === profile.id);
+      const clientProfile: ClientProfile = {
+        id: profile.id,
+        name: profile.full_name || 'PsyNova Client',
+        nic: existing?.nic || '',
+        phone: profile.phone || '',
+        email: profile.email || '',
+        district: profile.district || 'Colombo',
+        languages: existing?.languages || ['Sinhala'],
+        password: existing?.password,
+        suspended: existing?.suspended,
+        deactivatedAt: existing?.deactivatedAt,
+      };
+
+      this.state.clients = existing
+        ? this.state.clients.map(client => client.id === profile.id ? clientProfile : client)
+        : [clientProfile, ...this.state.clients];
+    }
+
+    if (profile.role === 'psychiatrist') {
+      const existing = this.state.psychiatrists.find(d => d.id === profile.id);
+      const doctorProfile: Psychiatrist = {
+        id: profile.id,
+        name: profile.full_name || 'PsyNova Psychiatrist',
+        photo: existing?.photo || `https://picsum.photos/seed/${profile.id}/300/300`,
+        qualifications: existing?.qualifications || 'Pending qualifications review',
+        specializations: existing?.specializations || ['General Psychiatry'],
+        languages: existing?.languages || ['Sinhala'],
+        district: profile.district || 'Colombo',
+        fee: existing?.fee || 3500,
+        slmcNumber: existing?.slmcNumber || 'Pending SLMC',
+        slmcVerified: existing?.slmcVerified || false,
+        isBoosted: existing?.isBoosted || false,
+        boostExpiresAt: existing?.boostExpiresAt,
+        availableSlots: existing?.availableSlots || [],
+        bio: existing?.bio || 'Profile pending admin verification.',
+        slmcDocumentName: existing?.slmcDocumentName,
+        deactivatedAt: existing?.deactivatedAt,
+      };
+
+      this.state.psychiatrists = existing
+        ? this.state.psychiatrists.map(doctor => doctor.id === profile.id ? doctorProfile : doctor)
+        : [doctorProfile, ...this.state.psychiatrists];
+    }
+
+    this.state.currentRole = profile.role;
+    this.state.loggedInUserId = profile.id;
+    this.save();
+  }
+
   // Doctor functions
   public registerDoctor(doc: Omit<Psychiatrist, 'id' | 'slmcVerified' | 'isBoosted' | 'availableSlots'>) {
     const id = `psy-${Date.now()}`;

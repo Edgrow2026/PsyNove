@@ -30,9 +30,9 @@ export default function Modal({
     >
       <div className={cn('bg-white rounded-2xl w-full shadow-2xl border border-hairline overflow-hidden', panelClassName)}>
         {(title || onClose) && (
-          <div className="bg-paper text-ink-navy p-5 flex items-center justify-between border-b border-hairline">
+          <div className="sticky top-0 z-10 bg-paper text-ink-navy p-4 sm:p-5 flex items-center justify-between border-b border-hairline">
             <div className="space-y-0.5">
-              {title && <h3 className="font-bold text-sm tracking-tight font-display">{title}</h3>}
+              {title && <h3 className="font-bold text-sm sm:text-base tracking-tight font-display">{title}</h3>}
               {description && <p className="text-slate-500 text-[11px] font-sans">{description}</p>}
             </div>
             {onClose && (
