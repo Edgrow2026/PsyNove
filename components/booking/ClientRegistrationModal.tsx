@@ -30,7 +30,6 @@ interface ClientRegistrationModalProps {
     event: React.SyntheticEvent<HTMLFormElement>,
   ) => void | Promise<void>;
 }
-
 export default function ClientRegistrationModal({
   districtList,
   t,
