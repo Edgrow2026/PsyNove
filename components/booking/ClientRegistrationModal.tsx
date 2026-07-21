@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Dispatch, FormEvent, SetStateAction } from 'react';
-import { LogIn } from 'lucide-react';
-import { Psychiatrist } from '@/lib/store';
-import { Language, TranslationSet } from '@/lib/translations';
-import { uiCopy } from '@/lib/ui-copy';
+import { Dispatch, SetStateAction } from "react";
+import { LogIn } from "lucide-react";
+import { Psychiatrist } from "@/lib/store";
+import { Language, TranslationSet } from "@/lib/translations";
+import { uiCopy } from "@/lib/ui-copy";
 
 interface ClientRegistrationModalProps {
   selectedDoc: Psychiatrist;
@@ -26,9 +26,10 @@ interface ClientRegistrationModalProps {
   setRegPassword: Dispatch<SetStateAction<string>>;
   onClose: () => void;
   onUseSandboxClient: () => void;
-  onSubmit: (event: FormEvent) => void;
+  onSubmit: (
+    event: React.SyntheticEvent<HTMLFormElement>,
+  ) => void | Promise<void>;
 }
-
 export default function ClientRegistrationModal({
   districtList,
   t,
@@ -52,12 +53,19 @@ export default function ClientRegistrationModal({
   const copy = uiCopy[lang];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="register-flow-modal">
+    <div
+      className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in"
+      id="register-flow-modal"
+    >
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-hairline text-slate-700">
         <div className="p-5 border-b border-hairline flex justify-between items-center bg-paper">
           <div className="space-y-0.5">
-            <h3 className="font-bold text-ink-navy text-sm sm:text-base font-display">{copy.patientRegistrationTitle}</h3>
-            <p className="text-slate-500 text-[11px] font-sans">{copy.patientRegistrationSub}</p>
+            <h3 className="font-bold text-ink-navy text-sm sm:text-base font-display">
+              {copy.patientRegistrationTitle}
+            </h3>
+            <p className="text-slate-500 text-[11px] font-sans">
+              {copy.patientRegistrationSub}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -70,8 +78,12 @@ export default function ClientRegistrationModal({
         <div className="px-5 pt-4 font-sans">
           <div className="bg-paper border border-hairline p-3.5 rounded-xl flex items-center justify-between text-xs">
             <div className="space-y-0.5">
-              <span className="font-bold text-ink-navy block">{copy.quickSandboxAccess}</span>
-              <span className="text-[10px] text-slate-600">{copy.quickSandboxText}</span>
+              <span className="font-bold text-ink-navy block">
+                {copy.quickSandboxAccess}
+              </span>
+              <span className="text-[10px] text-slate-600">
+                {copy.quickSandboxText}
+              </span>
             </div>
             <button
               onClick={onUseSandboxClient}
@@ -86,7 +98,9 @@ export default function ClientRegistrationModal({
         <form onSubmit={onSubmit} className="p-5 space-y-4 text-xs font-sans">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.fullName}</label>
+              <label className="font-bold text-slate-700">
+                {copy.fullName}
+              </label>
               <input
                 type="text"
                 required
@@ -97,7 +111,9 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.nicPassport}</label>
+              <label className="font-bold text-slate-700">
+                {copy.nicPassport}
+              </label>
               <input
                 type="text"
                 required
@@ -108,7 +124,9 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.mobilePhone}</label>
+              <label className="font-bold text-slate-700">
+                {copy.mobilePhone}
+              </label>
               <input
                 type="text"
                 required
@@ -130,19 +148,25 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.district}</label>
+              <label className="font-bold text-slate-700">
+                {copy.district}
+              </label>
               <select
                 value={regDistrict}
                 onChange={(e) => setRegDistrict(e.target.value)}
                 className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden scheme-light"
               >
                 {districtList.map((dist) => (
-                  <option key={dist} value={dist}>{t.districts[dist] || dist}</option>
+                  <option key={dist} value={dist}>
+                    {t.districts[dist] || dist}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="space-y-1 font-sans">
-              <label className="font-bold text-slate-700">{copy.password}</label>
+              <label className="font-bold text-slate-700">
+                {copy.password}
+              </label>
               <input
                 type="password"
                 required

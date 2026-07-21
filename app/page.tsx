@@ -123,7 +123,10 @@ export default function HomePage() {
         .eq("verification_status", "verified");
 
       if (error) {
-        console.warn("Unable to fetch psychiatrist profiles; using local seed data.", error.message);
+        console.warn(
+          "Unable to fetch psychiatrist profiles; using local seed data.",
+          error.message,
+        );
         return;
       }
 
