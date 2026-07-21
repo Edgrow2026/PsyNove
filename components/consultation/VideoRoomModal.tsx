@@ -1,20 +1,25 @@
 'use client';
 
 import { Booking } from '@/lib/store';
+import { Language } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
 interface VideoRoomModalProps {
   booking: Booking;
+  lang: Language;
   onClose: () => void;
 }
 
-export default function VideoRoomModal({ booking, onClose }: VideoRoomModalProps) {
+export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModalProps) {
+  const copy = uiCopy[lang];
+
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 p-3 sm:p-6 animate-fade-in flex flex-col">
       <div className="bg-white border border-hairline rounded-2xl shadow-2xl overflow-hidden flex-1 flex flex-col">
         <div className="bg-paper border-b border-hairline p-4 flex items-center justify-between">
           <div>
             <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-1 rounded-md uppercase">
-              Jitsi Meet Live Room
+              {copy.jitsiRoom}
             </span>
             <h3 className="font-bold text-ink-navy text-sm mt-1 font-display">{booking.psychiatristName} · {booking.clientName}</h3>
           </div>
@@ -22,7 +27,7 @@ export default function VideoRoomModal({ booking, onClose }: VideoRoomModalProps
             onClick={onClose}
             className="bg-white border border-hairline px-3 py-2 rounded-xl text-xs font-bold text-ink-navy hover:border-warm-turmeric"
           >
-            Exit Room
+            {copy.exitRoom}
           </button>
         </div>
         <iframe

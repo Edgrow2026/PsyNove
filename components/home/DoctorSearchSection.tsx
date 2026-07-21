@@ -3,11 +3,13 @@
 import { Dispatch, SetStateAction } from 'react';
 import { AlertCircle, Calendar, DollarSign, Globe, MapPin, Search } from 'lucide-react';
 import { Psychiatrist } from '@/lib/store';
-import { TranslationSet } from '@/lib/translations';
+import { Language, TranslationSet } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 import DoctorCard from './DoctorCard';
 
 interface DoctorSearchSectionProps {
   t: TranslationSet;
+  lang: Language;
   searchQuery: string;
   selectedDistrict: string;
   selectedLanguage: string;
@@ -27,6 +29,7 @@ interface DoctorSearchSectionProps {
 
 export default function DoctorSearchSection({
   t,
+  lang,
   searchQuery,
   selectedDistrict,
   selectedLanguage,
@@ -43,12 +46,14 @@ export default function DoctorSearchSection({
   formatTime,
   onBook,
 }: DoctorSearchSectionProps) {
+  const copy = uiCopy[lang];
+
   return (
     <section className="space-y-4 pt-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-hairline pb-3" id="search-anchor">
         <div className="font-sans">
           <h3 className="text-lg font-black text-ink-navy font-display">{t.searchTitle}</h3>
-          <p className="text-slate-600 text-xs">Search and secure live sessions instantly below</p>
+          <p className="text-slate-600 text-xs">{copy.searchSub}</p>
         </div>
 
         <div className="mt-3 md:mt-0 max-w-xs bg-white p-2 rounded-xl border border-hairline flex items-center space-x-2 text-ink-navy shadow-sm">
@@ -152,7 +157,7 @@ export default function DoctorSearchSection({
             }}
             className="w-full bg-paper hover:bg-slate-100 text-ink-navy text-[11px] font-semibold py-2.5 rounded-xl transition-all cursor-pointer text-center block border border-hairline"
           >
-            Filters Clear
+            {copy.filtersClear}
           </button>
         </div>
 
@@ -175,6 +180,7 @@ export default function DoctorSearchSection({
                     doctor={doctor}
                     featured
                     t={t}
+                    lang={lang}
                     formatTime={formatTime}
                     onBook={onBook}
                   />
@@ -190,7 +196,7 @@ export default function DoctorSearchSection({
 
             {regularDocs.length === 0 ? (
               <div className="text-center py-10 bg-white rounded-2xl border border-hairline">
-                <p className="text-slate-600 text-xs sm:text-sm font-medium">No psychiatrists match your search filter criteria.</p>
+                <p className="text-slate-600 text-xs sm:text-sm font-medium">{copy.noDoctors}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -199,6 +205,7 @@ export default function DoctorSearchSection({
                     key={doctor.id}
                     doctor={doctor}
                     t={t}
+                    lang={lang}
                     formatTime={formatTime}
                     onBook={onBook}
                   />

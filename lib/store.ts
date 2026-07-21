@@ -282,28 +282,35 @@ const DEFAULT_STATE: AppState = {
 class StateStore {
   private state: AppState = DEFAULT_STATE;
   private listeners: (() => void)[] = [];
+  private hydrated = false;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('psynova_store');
-      if (stored) {
-        try {
-          this.state = JSON.parse(stored);
-        } catch (e) {
-          console.error("Failed to parse store, resetting", e);
-          this.state = DEFAULT_STATE;
-          this.save();
-        }
-      } else {
-        const browserLang = navigator.language.toLowerCase();
-        this.state.currentLanguage = browserLang.startsWith('ta')
+  private hydrateFromBrowser() {
+    if (this.hydrated || typeof window === 'undefined') return;
+    this.hydrated = true;
+
+    const stored = localStorage.getItem('psynova_store');
+    if (stored) {
+      try {
+        this.state = JSON.parse(stored);
+      } catch (e) {
+        console.error("Failed to parse store, resetting", e);
+        this.state = { ...DEFAULT_STATE };
+        localStorage.setItem('psynova_store', JSON.stringify(this.state));
+      }
+    } else {
+      const browserLang = navigator.language.toLowerCase();
+      this.state = {
+        ...this.state,
+        currentLanguage: browserLang.startsWith('ta')
           ? 'ta'
           : browserLang.startsWith('en')
             ? 'en'
-            : 'si';
-        this.save();
-      }
+            : 'si',
+      };
+      localStorage.setItem('psynova_store', JSON.stringify(this.state));
     }
+
+    this.notify();
   }
 
   public getState(): AppState {
@@ -312,6 +319,7 @@ class StateStore {
 
   public subscribe(listener: () => void): () => void {
     this.listeners.push(listener);
+    this.hydrateFromBrowser();
     return () => {
       this.listeners = this.listeners.filter(l => l !== listener);
     };

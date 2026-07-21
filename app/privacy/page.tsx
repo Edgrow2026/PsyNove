@@ -39,7 +39,19 @@ export default function PrivacyPage() {
       retentionTitle: "5. රඳවා තබා ගැනීම සහ දින 7ක රඳවා ගැනීම",
       retentionBody: "ගිණුමක් අක්‍රීය කිරීමේදී වෛද්‍ය වාර්තා නීතිමය සුරක්ෂිතභාවය වෙනුවෙන් අවම වශයෙන් දින 7ක පරිපාලන රඳවා ගැනීමේ කාලසීමාවකට යටත් වේ. ඉන්පසු සියලු පුද්ගලික තොරතුරු පද්ධතියෙන් ස්ථිරවම ඉවත් කෙරේ.",
       rightsTitle: "6. සේවාලාභී අයිතිවාසිකම්",
-      rightsBody: "ඔබේ දත්ත පරීක්ෂා කිරීමට, වෙනස් කිරීමට, හෝ මකා දැමීමට ඉල්ලීම් ඉදිරිපත් කිරීමට ඔබට නීත්‍යානුකූල අයිතිය ඇත. ඕනෑම ගැටලුවක් support@psynova.lk හරහා අප වෙත යොමුකළ හැක."
+      rightsBody: "ඔබේ දත්ත පරීක්ෂා කිරීමට, වෙනස් කිරීමට, හෝ මකා දැමීමට ඉල්ලීම් ඉදිරිපත් කිරීමට ඔබට නීත්‍යානුකූල අයිතිය ඇත. ඕනෑම ගැටලුවක් support@psynova.lk හරහා අප වෙත යොමුකළ හැක.",
+      finalTitle: "7. ආරක්ෂාව, අඩු වයස් පරිශීලකයන්, Cookies, යාවත්කාලීන සහ සම්බන්ධතා",
+      security: "ආරක්ෂාව:",
+      securityBody: "සංවේදී වාර්තා සඳහා encryption, access control සහ production පෙර breach notification ක්‍රියාවලිය අවශ්‍ය වේ.",
+      minors: "ළමුන්/අඩු වයස්:",
+      minorsBody: "ස්වාධීන ලියාපදිංචිය වයස 18+ වැඩිහිටියන් සඳහාය. guardian workflow සඳහා නීතිමය සමාලෝචනය අවශ්‍ය වේ.",
+      cookies: "Cookies:",
+      cookiesBody: "භාෂා සහ PWA හැසිරීම සඳහා අත්‍යවශ්‍ය app preference storage භාවිතා විය හැක.",
+      updates: "ප්‍රතිපත්ති යාවත්කාලීන:",
+      updatesBody: "වැදගත් privacy වෙනස්කම් app තුළ සහ අවශ්‍ය විට SMS මගින් පෙන්විය යුතුය.",
+      contact: "සම්බන්ධතා:",
+      contactBody: "privacy සහ data-rights ඉල්ලීම් support@psynova.lk හෝ platform compliance desk වෙත යොමු කළ හැක.",
+      copyright: "© 2026 PsyNova ශ්‍රී ලංකා වේදිකාව. පෞද්ගලිකත්ව සහ අනුකූලතා අංශය."
     },
     ta: {
       title: "தனியுரிமைக் கொள்கை",
@@ -57,7 +69,19 @@ export default function PrivacyPage() {
       retentionTitle: "5. தரவு தக்கவைப்பு மற்றும் 7 நாட்கள் கால அவகாசம்",
       retentionBody: "ஒரு பயனர் தனது கணக்கை முடக்கக் கோரினால், சட்ட மற்றும் பாதுகாப்பு விதிகளை மதித்து 7 நாட்களுக்கு அந்தத் தரவுகள் தற்காலிகமாக வைக்கப்படும். அதன் பின்னர் தரவுகள் முற்றிலும் நீக்கப்படும்.",
       rightsTitle: "6. பயனர் உரிமைகள்",
-      rightsBody: "உங்கள் தனிப்பட்ட தரவை அணுகவும், திருத்தவும் மற்றும் முற்றிலும் நீக்கக் கோரவும் உங்களுக்கு உரிமை உண்டு. கேள்விகளுக்கு support@psynova.lk ஐத் தொடர்பு கொள்ளவும்."
+      rightsBody: "உங்கள் தனிப்பட்ட தரவை அணுகவும், திருத்தவும் மற்றும் முற்றிலும் நீக்கக் கோரவும் உங்களுக்கு உரிமை உண்டு. கேள்விகளுக்கு support@psynova.lk ஐத் தொடர்பு கொள்ளவும்.",
+      finalTitle: "7. பாதுகாப்பு, சிறார்கள், Cookies, புதுப்பிப்புகள் மற்றும் தொடர்பு",
+      security: "பாதுகாப்பு:",
+      securityBody: "உணர்திறன் மிக்க பதிவுகளுக்கு encryption, access control மற்றும் production முன் breach notification நடைமுறை தேவை.",
+      minors: "சிறார்கள்:",
+      minorsBody: "சுய பதிவு 18+ வயது பெரியவர்களுக்கு மட்டுமே. guardian workflow சட்ட பரிசீலனை தேவை.",
+      cookies: "Cookies:",
+      cookiesBody: "மொழி மற்றும் PWA நடத்தைச் சேமிக்க அவசியமான app preference storage பயன்படுத்தப்படலாம்.",
+      updates: "கொள்கை புதுப்பிப்புகள்:",
+      updatesBody: "முக்கிய privacy மாற்றங்கள் app-இலும் தேவையான இடங்களில் SMS மூலமும் அறிவிக்கப்பட வேண்டும்.",
+      contact: "தொடர்பு:",
+      contactBody: "privacy மற்றும் data-rights கோரிக்கைகளை support@psynova.lk அல்லது platform compliance desk-க்கு அனுப்பலாம்.",
+      copyright: "© 2026 PsyNova இலங்கை தளம். தனியுரிமை மற்றும் இணக்கப் பிரிவு."
     },
     en: {
       title: "Privacy & Data Policy",
@@ -75,7 +99,19 @@ export default function PrivacyPage() {
       retentionTitle: "5. Dynamic Retention & The 7-Day Safety Hold",
       retentionBody: "Upon deactivation, account indexes enter a non-bypassable 7-calendar-day administrative hold to satisfy audit requirements. Following this quarantine window, all clinical profiles and communication databases are permanently purged.",
       rightsTitle: "6. User Data Rights",
-      rightsBody: "You hold the statutory right to request absolute access, correction, or permanent erasure of your data records. For inquiries, reach out to support@psynova.lk."
+      rightsBody: "You hold the statutory right to request absolute access, correction, or permanent erasure of your data records. For inquiries, reach out to support@psynova.lk.",
+      finalTitle: "7. Security, Minors, Cookies, Updates & Contact",
+      security: "Security:",
+      securityBody: "sensitive records require encryption, access control, and breach notification before production launch.",
+      minors: "Children/Minors:",
+      minorsBody: "independent registration is intended for adults 18+. Guardian workflows require legal review.",
+      cookies: "Cookies:",
+      cookiesBody: "essential app preference storage may be used for language and PWA behavior.",
+      updates: "Policy Updates:",
+      updatesBody: "material privacy changes should be shown in-app and through SMS where required.",
+      contact: "Contact:",
+      contactBody: "privacy and data-rights requests can be routed to support@psynova.lk or the platform compliance desk.",
+      copyright: "© 2026 PsyNova Platform Sri Lanka. Privacy & General Compliance Directorate."
     }
   }[lang];
 
@@ -152,13 +188,13 @@ export default function PrivacyPage() {
           </div>
 
           <div className="space-y-3 border-t border-hairline pt-5">
-            <h2 className="text-lg font-bold text-ink-navy">7. Security, Minors, Cookies, Updates & Contact</h2>
+            <h2 className="text-lg font-bold text-ink-navy">{privacyTexts.finalTitle}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Security:</strong> sensitive records require encryption, access control, and breach notification before production launch.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Children/Minors:</strong> independent registration is intended for adults 18+. Guardian workflows require legal review.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Cookies:</strong> essential app preference storage may be used for language and PWA behavior.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Policy Updates:</strong> material privacy changes should be shown in-app and through SMS where required.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3 sm:col-span-2"><strong>Contact:</strong> privacy and data-rights requests can be routed to support@psynova.lk or the platform compliance desk.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{privacyTexts.security}</strong> {privacyTexts.securityBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{privacyTexts.minors}</strong> {privacyTexts.minorsBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{privacyTexts.cookies}</strong> {privacyTexts.cookiesBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{privacyTexts.updates}</strong> {privacyTexts.updatesBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3 sm:col-span-2"><strong>{privacyTexts.contact}</strong> {privacyTexts.contactBody}</p>
             </div>
           </div>
 
@@ -168,7 +204,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <footer className="bg-paper text-slate-500 py-6 border-t border-hairline text-center text-xs">
-        <p>© 2026 PsyNova Platform Sri Lanka. Privacy & General Compliance Directorate.</p>
+        <p>{privacyTexts.copyright}</p>
       </footer>
 
       <SimulatorSettings />

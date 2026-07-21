@@ -10,6 +10,7 @@ import PwaRegister from '../../../components/PwaRegister';
 import SimulatorSettings from '../../../components/SimulatorSettings';
 import { store, AppState } from '../../../lib/store';
 import { translations } from '../../../lib/translations';
+import { uiCopy } from '../../../lib/ui-copy';
 
 export default function PsychiatristProfilePage() {
   const params = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ export default function PsychiatristProfilePage() {
   }, []);
 
   const t = translations[state.currentLanguage];
+  const copy = uiCopy[state.currentLanguage];
   const doctor = state.psychiatrists.find((doc) => doc.id === params.id);
 
   if (!doctor) {
@@ -29,8 +31,8 @@ export default function PsychiatristProfilePage() {
         <PwaRegister />
         <Navbar />
         <main className="mx-auto max-w-3xl px-4 py-16 text-center space-y-4">
-          <h1 className="text-3xl font-display font-bold">Profile not found</h1>
-          <Link href="/" className="text-amber-800 font-bold hover:underline">Back to search</Link>
+          <h1 className="text-3xl font-display font-bold">{copy.profileNotFound}</h1>
+          <Link href="/" className="text-amber-800 font-bold hover:underline">{copy.backToSearch}</Link>
         </main>
       </div>
     );
@@ -44,7 +46,7 @@ export default function PsychiatristProfilePage() {
       <main className="flex-1 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <Link href="/#search-anchor" className="inline-flex items-center space-x-2 text-xs font-bold text-slate-600 hover:text-ink-navy">
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to specialists</span>
+          <span>{copy.backToSpecialists}</span>
         </Link>
 
         <section className="bg-white border border-hairline rounded-2xl shadow-sm overflow-hidden">
@@ -107,7 +109,7 @@ export default function PsychiatristProfilePage() {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {doctor.availableSlots.length === 0 ? (
-                    <span className="text-xs text-slate-500 italic">No active slots published.</span>
+                    <span className="text-xs text-slate-500 italic">{copy.noSlots}</span>
                   ) : (
                     doctor.availableSlots.map((slot) => (
                       <Link

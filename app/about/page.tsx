@@ -36,7 +36,12 @@ export default function AboutPage() {
       val3Title: "සහනදායී සේවාව",
       val3Desc: "අනවශ්‍ය ප්‍රවාහන හෝ රෝහල් අමතර ගාස්තු නොමැතිව, සෘජු සාධාරණ වෛද්‍ය උපදේශන ගාස්තු පමණක් ගෙවීමට පහසුකම.",
       val4Title: "සෑම මොහොතකම සහාය",
-      val4Desc: "ඕනෑම තාක්ෂණික හෝ වෛද්‍ය ගැටලුවක් සඳහා සහාය වීමට කැපවූ දේශීය පාරිභෝගික සේවා කණ්ඩායම."
+      val4Desc: "ඕනෑම තාක්ෂණික හෝ වෛද්‍ය ගැටලුවක් සඳහා සහාය වීමට කැපවූ දේශීය පාරිභෝගික සේවා කණ්ඩායම.",
+      missionBadge: "PsyNova මෙහෙවර",
+      verifiedTitle: "100% සත්‍යාපිතයි",
+      verifiedSub: "ශ්‍රී ලංකා වෛද්‍ය නියාමන ප්‍රමිතීන්ට සම්පූර්ණ අනුකූලයි",
+      valuesSub: "අපගේ සේවා ක්‍රියාවලිය සෞඛ්‍ය අඛණ්ඩතාව සහ තාක්ෂණික විශිෂ්ටත්වය මත පදනම් වේ.",
+      copyright: "© 2026 PsyNova ශ්‍රී ලංකා වේදිකාව. සියලු හිමිකම් ඇවිරිණි."
     },
     ta: {
       title: "PsyNova பற்றி",
@@ -51,7 +56,12 @@ export default function AboutPage() {
       val3Title: "மலிவு விலை சேவை",
       val3Desc: "தேவையற்ற பயணக் கட்டணங்கள் அல்லது கூடுதல் மருத்துவமனை கட்டணங்களின்றி, நியாயமான ஆலோசனைக் கட்டணங்களை மட்டுமே செலுத்துங்கள்.",
       val4Title: "எந்நேரமும் ஆதரவு",
-      val4Desc: "எந்தவொரு தொழில்நுட்ப அல்லது ஆலோசனைத் தேவைகளுக்கும் உதவ எங்கள் பிரத்யேக வாடிக்கையாளர் ஆதரவுக் குழு எப்போதும் தயாராக உள்ளது."
+      val4Desc: "எந்தவொரு தொழில்நுட்ப அல்லது ஆலோசனைத் தேவைகளுக்கும் உதவ எங்கள் பிரத்யேக வாடிக்கையாளர் ஆதரவுக் குழு எப்போதும் தயாராக உள்ளது.",
+      missionBadge: "PsyNova பணி",
+      verifiedTitle: "100% சரிபார்க்கப்பட்டது",
+      verifiedSub: "இலங்கை மருத்துவ விதிமுறைகளுக்கு முழுமையாக இணக்கம்",
+      valuesSub: "எங்கள் செயற்பாட்டு நடைமுறை சுகாதார நேர்மை மற்றும் தொழில்நுட்பத் திறனில் அமைந்துள்ளது.",
+      copyright: "© 2026 PsyNova இலங்கை தளம். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை."
     },
     en: {
       title: "About PsyNova",
@@ -66,7 +76,12 @@ export default function AboutPage() {
       val3Title: "Affordable & Fair Pricing",
       val3Desc: "By optimizing digital appointments, patients pay flat doctor fees without premium hospital surcharges or logistical travel expenses.",
       val4Title: "Committed Support Team",
-      val4Desc: "Our dedicated Sri Lankan support staff is online to handle any dispute, refund appeal, or booking adjustment within 24 hours."
+      val4Desc: "Our dedicated Sri Lankan support staff is online to handle any dispute, refund appeal, or booking adjustment within 24 hours.",
+      missionBadge: "PsyNova Mission",
+      verifiedTitle: "100% Verified Only",
+      verifiedSub: "Fully compliant with Sri Lankan medical regulations",
+      valuesSub: "We base our operational flow on healthcare integrity and technical excellence.",
+      copyright: "© 2026 PsyNova Platform Sri Lanka. All Rights Reserved."
     }
   }[lang];
 
@@ -94,7 +109,7 @@ export default function AboutPage() {
           <div className="lg:col-span-7 space-y-4">
             <div className="inline-flex items-center space-x-1.5 bg-warm-turmeric/10 text-warm-turmeric px-3 py-1 rounded-full text-xs font-semibold">
               <Brain className="w-4 h-4 text-warm-turmeric" />
-              <span>{t.brandName} Mission</span>
+              <span>{aboutTexts.missionBadge}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink-navy">{aboutTexts.storyTitle}</h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
@@ -104,8 +119,8 @@ export default function AboutPage() {
           <div className="lg:col-span-5 bg-paper p-6 rounded-2xl border border-hairline flex flex-col items-center justify-center space-y-4 text-center">
             <Award className="w-16 h-16 text-warm-turmeric animate-pulse" />
             <div>
-              <span className="block text-xl font-bold text-ink-navy">100% Verified Only</span>
-              <span className="text-xs text-slate-600 font-medium tracking-wide">Fully Compliant with Sri Lankan Medical Regulations</span>
+              <span className="block text-xl font-bold text-ink-navy">{aboutTexts.verifiedTitle}</span>
+              <span className="text-xs text-slate-600 font-medium tracking-wide">{aboutTexts.verifiedSub}</span>
             </div>
           </div>
         </section>
@@ -115,7 +130,7 @@ export default function AboutPage() {
           <div className="text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-light text-ink-navy tracking-tight">{aboutTexts.valueTitle}</h2>
             <p className="text-slate-600 max-w-xl mx-auto text-xs sm:text-sm">
-              We base our operational flow on healthcare integrity and technical excellence.
+              {aboutTexts.valuesSub}
             </p>
           </div>
 
@@ -166,7 +181,7 @@ export default function AboutPage() {
       <footer className="bg-paper text-slate-600 py-8 border-t border-hairline">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center text-xs space-y-3">
           <p className="font-semibold text-red-600 max-w-3xl mx-auto">{t.emergencyDisclaimer}</p>
-          <p>© 2026 PsyNova Platform Sri Lanka. All Rights Reserved.</p>
+          <p>{aboutTexts.copyright}</p>
         </div>
       </footer>
 

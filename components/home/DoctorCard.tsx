@@ -4,17 +4,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Globe, MapPin, UserCheck } from 'lucide-react';
 import { Psychiatrist } from '@/lib/store';
-import { TranslationSet } from '@/lib/translations';
+import { Language, TranslationSet } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
 interface DoctorCardProps {
   doctor: Psychiatrist;
   featured?: boolean;
   t: TranslationSet;
+  lang: Language;
   formatTime: (time: string) => string;
   onBook: (doctor: Psychiatrist, slot: string) => void;
 }
 
-export default function DoctorCard({ doctor, featured = false, t, formatTime, onBook }: DoctorCardProps) {
+export default function DoctorCard({ doctor, featured = false, t, lang, formatTime, onBook }: DoctorCardProps) {
+  const copy = uiCopy[lang];
+
   return (
     <div
       className={`bg-white ${featured ? 'border-2 border-warm-turmeric' : 'border border-hairline'} rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between`}
@@ -39,7 +43,7 @@ export default function DoctorCard({ doctor, featured = false, t, formatTime, on
                 : 'bg-amber-50 text-amber-700 border-amber-200'
             }`}>
               <UserCheck className="w-2.5 h-2.5" />
-              <span>{doctor.slmcVerified ? 'SLMC OK' : 'SLMC PENDING'}</span>
+              <span>{doctor.slmcVerified ? copy.slmcOk : copy.slmcPendingShort}</span>
             </div>
           </div>
           <p className="text-[11px] text-slate-600 font-medium truncate">{doctor.qualifications}</p>
@@ -72,7 +76,7 @@ export default function DoctorCard({ doctor, featured = false, t, formatTime, on
         <div className="space-y-1.5">
           <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">{t.availableSlots}</span>
           {doctor.availableSlots.length === 0 ? (
-            <span className="block text-slate-500 text-[11px] italic">No active slots published.</span>
+            <span className="block text-slate-500 text-[11px] italic">{copy.noSlots}</span>
           ) : (
             <div className="flex flex-wrap gap-1">
               {doctor.availableSlots.map((slot) => {

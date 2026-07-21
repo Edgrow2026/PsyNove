@@ -41,7 +41,21 @@ export default function TermsPage() {
       deactTitle: "6. ගිණුම් අක්‍රීය කිරීම සහ දින 7ක රඳවා ගැනීම",
       deactBody: "ආරක්ෂිත සහ සෞඛ්‍ය වාර්තා ප්‍රතිපත්ති අනුව, ඕනෑම සාමාජිකයෙකු තම ගිණුම අක්‍රීය කිරීමට ඉල්ලූ විට ගිණුම සම්පූර්ණයෙන්ම මැකී යාමට පෙර අවම වශයෙන් දින 7ක අනිවාර්ය රඳවා ගැනීමේ කාලසීමාවක් ක්‍රියාත්මක වේ. මෙම කාලය කිසිදු ලෙසකින් කෙටි කළ නොහැක.",
       lawTitle: "7. පාලක නීතිය",
-      lawBody: "මෙම කොන්දේසි ශ්‍රී ලංකා ජනරජයේ පවතින නීති පද්ධතියට යටත් වන අතර ඕනෑම ගැටලුවක් කොළඹ පිහිටි අධිකරණ බල සීමාව යටතේ විසඳිය යුතුය."
+      lawBody: "මෙම කොන්දේසි ශ්‍රී ලංකා ජනරජයේ පවතින නීති පද්ධතියට යටත් වන අතර ඕනෑම ගැටලුවක් කොළඹ පිහිටි අධිකරණ බල සීමාව යටතේ විසඳිය යුතුය.",
+      rulesTitle: "8. අමතර වේදිකා නීති",
+      accountRule: "ගිණුම් වගකීම:",
+      accountRuleBody: "පරිශීලකයන්ගේ identity, mobile සහ booking විස්තර නිවැරදිව සහ ආරක්ෂිතව තබා ගත යුතුය.",
+      doctorRule: "වෛද්‍ය වගකීම්:",
+      doctorRuleBody: "වෛද්‍යවරුන් SLMC අනුකූලතාව, වෘත්තීය හැසිරීම සහ තම video account පවත්වා ගත යුතුය.",
+      complaintRule: "පැමිණිලි:",
+      complaintRuleBody: "පැමිණිලි admins විසින් අතින් සමාලෝචනය කර SMS මගින් පිළිගැනේ.",
+      boostingRule: "ප්‍රවර්ධන:",
+      boostingRuleBody: "boosting මගින් දෘශ්‍යතාව වැඩි වුවද booking සහතික නොවේ.",
+      prohibitedRule: "තහනම් හැසිරීම්:",
+      prohibitedRuleBody: "වංචා, අපයෝජන, impersonation, fake reviews සහ platform misuse තහනම්ය.",
+      liabilityRule: "වගකීම සහ වෙනස්කම්:",
+      liabilityRuleBody: "consultation outcome සහ third-party video reliability PsyNova පාලනයෙන් පිටතය; term changes app තුළ දැනුම් දිය යුතුය.",
+      copyright: "© 2026 PsyNova ශ්‍රී ලංකා වේදිකාව. නීතිමය ලේඛන අංශය."
     },
     ta: {
       title: "விதிமுறைகள் மற்றும் நிபந்தனைகள்",
@@ -61,7 +75,21 @@ export default function TermsPage() {
       deactTitle: "6. கணக்கு நீக்கம் மற்றும் 7 நாட்கள் நிறுத்திவைப்பு",
       deactBody: "பாதுகாப்பு மற்றும் மருத்துவ ஆவண விதிகளின்படி, ஒரு கணக்கை முடக்கிய பிறகு அது முழுமையாக நீக்கப்படுவதற்கு 7 நாட்கள் கட்டாயக் காத்திருப்பு காலம் அமல்படுத்தப்படும். இதனை நிர்வாகிகளால் குறைக்க முடியாது.",
       lawTitle: "7. சட்ட வரம்பு",
-      lawBody: "இந்த விதிகள் இலங்கையின் சட்டங்களுக்கு உட்பட்டவை. ஏதேனும் தகராறுகள் இருப்பின் கொழும்பு நீதிமன்ற எல்லைக்குள் தீர்க்கப்பட வேண்டும்."
+      lawBody: "இந்த விதிகள் இலங்கையின் சட்டங்களுக்கு உட்பட்டவை. ஏதேனும் தகராறுகள் இருப்பின் கொழும்பு நீதிமன்ற எல்லைக்குள் தீர்க்கப்பட வேண்டும்.",
+      rulesTitle: "8. கூடுதல் தள விதிகள்",
+      accountRule: "கணக்கு பொறுப்பு:",
+      accountRuleBody: "பயனர்கள் identity, mobile மற்றும் booking விவரங்களை சரியாகவும் பாதுகாப்பாகவும் வைத்திருக்க வேண்டும்.",
+      doctorRule: "மருத்துவர் பொறுப்புகள்:",
+      doctorRuleBody: "மருத்துவர்கள் SLMC இணக்கம், தொழில்முறை நடத்தை மற்றும் தங்களின் video account-ஐ பராமரிக்க வேண்டும்.",
+      complaintRule: "புகார்கள்:",
+      complaintRuleBody: "புகார்கள் admins மூலம் கைமுறையாக பரிசீலிக்கப்படும் மற்றும் SMS மூலம் ஏற்றுக்கொள்ளப்படும்.",
+      boostingRule: "விளம்பர முன்னேற்றம்:",
+      boostingRuleBody: "boosting காட்சி முன்னுரிமையை உயர்த்தும்; ஆனால் booking உத்தரவாதமில்லை.",
+      prohibitedRule: "தடைசெய்யப்பட்ட நடத்தை:",
+      prohibitedRuleBody: "மோசடி, தவறான பயன்பாடு, impersonation, fake reviews மற்றும் platform misuse அனுமதிக்கப்படாது.",
+      liabilityRule: "பொறுப்பு மற்றும் மாற்றங்கள்:",
+      liabilityRuleBody: "consultation outcomes மற்றும் third-party video reliability PsyNova கட்டுப்பாட்டுக்கு வெளியானவை; term changes app-இல் அறிவிக்கப்பட வேண்டும்.",
+      copyright: "© 2026 PsyNova இலங்கை தளம். சட்ட ஆவண பிரிவு."
     },
     en: {
       title: "Terms & Conditions of Service",
@@ -81,7 +109,21 @@ export default function TermsPage() {
       deactTitle: "6. Permanent Deactivation administrative Hold",
       deactBody: "In compliance with health-information protection standards, all profile deactivations are placed on a non-negotiable 7-calendar-day safety hold before complete database deletion. This cannot be shortened under any circumstance.",
       lawTitle: "7. Governing Sri Lankan Law",
-      lawBody: "These terms are fully governed by and interpreted under the judicial laws of the Democratic Socialist Republic of Sri Lanka. All disputes fall under Colombo jurisdiction."
+      lawBody: "These terms are fully governed by and interpreted under the judicial laws of the Democratic Socialist Republic of Sri Lanka. All disputes fall under Colombo jurisdiction.",
+      rulesTitle: "8. Additional Platform Rules",
+      accountRule: "Account responsibility:",
+      accountRuleBody: "users must keep identity, mobile, and booking details accurate and secure.",
+      doctorRule: "Psychiatrist obligations:",
+      doctorRuleBody: "doctors must maintain SLMC compliance, professional conduct, and their own video account.",
+      complaintRule: "Complaints:",
+      complaintRuleBody: "complaints are reviewed manually by admins and acknowledged through SMS.",
+      boostingRule: "Boosting:",
+      boostingRuleBody: "promotions improve visibility but do not guarantee bookings.",
+      prohibitedRule: "Prohibited conduct:",
+      prohibitedRuleBody: "fraud, abuse, impersonation, fake reviews, and platform misuse are not allowed.",
+      liabilityRule: "Liability and changes:",
+      liabilityRuleBody: "consultation outcomes and third-party video reliability remain outside PsyNova control; term changes should be notified in-app.",
+      copyright: "© 2026 PsyNova Platform Sri Lanka. Legal Documentation Department."
     }
   }[lang];
 
@@ -160,14 +202,14 @@ export default function TermsPage() {
           </div>
 
           <div className="space-y-3 border-t border-hairline pt-5">
-            <h2 className="text-lg font-bold text-ink-navy">8. Additional Platform Rules</h2>
+            <h2 className="text-lg font-bold text-ink-navy">{termsTexts.rulesTitle}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Account responsibility:</strong> users must keep identity, mobile, and booking details accurate and secure.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Psychiatrist obligations:</strong> doctors must maintain SLMC compliance, professional conduct, and their own video account.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Complaints:</strong> complaints are reviewed manually by admins and acknowledged through SMS.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Boosting:</strong> promotions improve visibility but do not guarantee bookings.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Prohibited conduct:</strong> fraud, abuse, impersonation, fake reviews, and platform misuse are not allowed.</p>
-              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>Liability and changes:</strong> consultation outcomes and third-party video reliability remain outside PsyNova control; term changes should be notified in-app.</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.accountRule}</strong> {termsTexts.accountRuleBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.doctorRule}</strong> {termsTexts.doctorRuleBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.complaintRule}</strong> {termsTexts.complaintRuleBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.boostingRule}</strong> {termsTexts.boostingRuleBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.prohibitedRule}</strong> {termsTexts.prohibitedRuleBody}</p>
+              <p className="bg-paper border border-hairline rounded-xl p-3"><strong>{termsTexts.liabilityRule}</strong> {termsTexts.liabilityRuleBody}</p>
             </div>
           </div>
 
@@ -177,7 +219,7 @@ export default function TermsPage() {
 
       {/* Footer */}
       <footer className="bg-paper text-slate-500 py-6 border-t border-hairline text-center text-xs">
-        <p>© 2026 PsyNova Platform Sri Lanka. Legal Documentation Department.</p>
+        <p>{termsTexts.copyright}</p>
       </footer>
 
       <SimulatorSettings />

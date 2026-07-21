@@ -3,13 +3,15 @@
 import { Dispatch, FormEvent, SetStateAction } from 'react';
 import { LogIn } from 'lucide-react';
 import { Psychiatrist } from '@/lib/store';
-import { TranslationSet } from '@/lib/translations';
+import { Language, TranslationSet } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
 interface ClientRegistrationModalProps {
   selectedDoc: Psychiatrist;
   bookingSlot: string;
   districtList: string[];
   t: TranslationSet;
+  lang: Language;
   regName: string;
   regNIC: string;
   regPhone: string;
@@ -30,6 +32,7 @@ interface ClientRegistrationModalProps {
 export default function ClientRegistrationModal({
   districtList,
   t,
+  lang,
   regName,
   regNIC,
   regPhone,
@@ -46,34 +49,36 @@ export default function ClientRegistrationModal({
   onUseSandboxClient,
   onSubmit,
 }: ClientRegistrationModalProps) {
+  const copy = uiCopy[lang];
+
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="register-flow-modal">
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-hairline text-slate-700">
         <div className="p-5 border-b border-hairline flex justify-between items-center bg-paper">
           <div className="space-y-0.5">
-            <h3 className="font-bold text-ink-navy text-sm sm:text-base font-display">සේවාලාභී ගිණුම සාදන්න / Patient Registration</h3>
-            <p className="text-slate-500 text-[11px] font-sans">You must verify your identity to reserve a psychiatric appointment.</p>
+            <h3 className="font-bold text-ink-navy text-sm sm:text-base font-display">{copy.patientRegistrationTitle}</h3>
+            <p className="text-slate-500 text-[11px] font-sans">{copy.patientRegistrationSub}</p>
           </div>
           <button
             onClick={onClose}
             className="text-slate-600 hover:text-ink-navy cursor-pointer text-xs font-bold transition-colors font-sans"
           >
-            Close
+            {copy.close}
           </button>
         </div>
 
         <div className="px-5 pt-4 font-sans">
           <div className="bg-paper border border-hairline p-3.5 rounded-xl flex items-center justify-between text-xs">
             <div className="space-y-0.5">
-              <span className="font-bold text-ink-navy block">Quick Sandbox Account Access</span>
-              <span className="text-[10px] text-slate-600">Immediately logs in as client &apos;Kavindu&apos; to skip forms.</span>
+              <span className="font-bold text-ink-navy block">{copy.quickSandboxAccess}</span>
+              <span className="text-[10px] text-slate-600">{copy.quickSandboxText}</span>
             </div>
             <button
               onClick={onUseSandboxClient}
               className="bg-warm-turmeric text-ink-navy text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer hover:bg-warm-turmeric/90 transition-all"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Use Kavindu</span>
+              <span>{copy.useKavindu}</span>
             </button>
           </div>
         </div>
@@ -81,7 +86,7 @@ export default function ClientRegistrationModal({
         <form onSubmit={onSubmit} className="p-5 space-y-4 text-xs font-sans">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">සම්පූර්ණ නම / Full Name</label>
+              <label className="font-bold text-slate-700">{copy.fullName}</label>
               <input
                 type="text"
                 required
@@ -92,7 +97,7 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">NIC / Passport Number</label>
+              <label className="font-bold text-slate-700">{copy.nicPassport}</label>
               <input
                 type="text"
                 required
@@ -103,7 +108,7 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">ජංගම දුරකථනය / Mobile Phone</label>
+              <label className="font-bold text-slate-700">{copy.mobilePhone}</label>
               <input
                 type="text"
                 required
@@ -114,7 +119,7 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">විද්‍යුත් තැපෑල / Email</label>
+              <label className="font-bold text-slate-700">{copy.email}</label>
               <input
                 type="email"
                 required
@@ -125,7 +130,7 @@ export default function ClientRegistrationModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">දිස්ත්‍රික්කය / District</label>
+              <label className="font-bold text-slate-700">{copy.district}</label>
               <select
                 value={regDistrict}
                 onChange={(e) => setRegDistrict(e.target.value)}
@@ -137,7 +142,7 @@ export default function ClientRegistrationModal({
               </select>
             </div>
             <div className="space-y-1 font-sans">
-              <label className="font-bold text-slate-700">මුරපදය / Password</label>
+              <label className="font-bold text-slate-700">{copy.password}</label>
               <input
                 type="password"
                 required
@@ -153,7 +158,7 @@ export default function ClientRegistrationModal({
             type="submit"
             className="w-full bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy font-bold py-3 rounded-xl transition-all duration-300 tracking-wide cursor-pointer text-center shadow-xs font-sans"
           >
-            Register & Proceed To Checkout
+            {copy.registerProceed}
           </button>
         </form>
       </div>

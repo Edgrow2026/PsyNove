@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { store, AppState } from '../lib/store';
 import { translations, Language } from '../lib/translations';
+import { uiCopy } from '../lib/ui-copy';
 import { Menu, X, BrainCircuit, User, LogOut, ChevronDown, Award, ShieldAlert, HeartHandshake } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -29,6 +30,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
 
   const t = translations[state.currentLanguage];
   const lang = state.currentLanguage;
+  const copy = uiCopy[lang];
 
   const handleLangChange = (newLang: Language) => {
     store.setLanguage(newLang);
@@ -44,11 +46,21 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
     e.preventDefault();
     const ok = store.loginClient(loginPhone.trim(), loginPassword);
     if (!ok) {
-      setLoginError('Invalid mobile/password or suspended account.');
+      setLoginError(copy.invalidLogin);
       return;
     }
     setLoginError('');
     setLoginOpen(false);
+  };
+
+  const goToHomeSection = (sectionId: string) => {
+    setMobileMenuOpen(false);
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    window.location.href = `/#${sectionId}`;
   };
 
   const getRoleBadge = () => {
@@ -91,6 +103,13 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
           >
             {t.home}
           </Link>
+          <button
+            type="button"
+            onClick={() => goToHomeSection('search-anchor')}
+            className="hover:text-ink-navy hover:opacity-100 transition-colors cursor-pointer"
+          >
+            {copy.findDoctors}
+          </button>
           <Link
             href="/about"
             className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'about' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
@@ -102,18 +121,6 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
             className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'support' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
           >
             {t.support}
-          </Link>
-          <Link
-            href="/terms"
-            className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'terms' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
-          >
-            {t.terms}
-          </Link>
-          <Link
-            href="/privacy"
-            className={`hover:text-ink-navy hover:opacity-100 transition-colors ${activeSection === 'privacy' ? 'text-ink-navy font-bold border-b-2 border-warm-turmeric pb-1' : ''}`}
-          >
-            {t.privacy}
           </Link>
         </nav>
 
@@ -170,7 +177,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-hairline py-1.5 z-50 animate-fade-in">
                   <div className="px-3 py-1.5 border-b border-hairline">
-                    <span className="block text-[10px] text-slate-500 font-bold tracking-wider uppercase">භූමිකාව / Account Type</span>
+                    <span className="block text-[10px] text-slate-500 font-bold tracking-wider uppercase">{copy.accountType}</span>
                     {badge && (
                       <span className={`inline-block mt-1 px-2 py-0.5 text-[9px] font-bold rounded-md border ${badge.color}`}>
                         {badge.text}
@@ -225,11 +232,16 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-hairline bg-white/95 backdrop-blur-md px-4 py-4 space-y-3 shadow-2xl animate-fade-in" id="mobile-drawer">
           <div className="space-y-1">
-            <Link href="/" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.home}</Link>
-            <Link href="/about" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.about}</Link>
-            <Link href="/support" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.support}</Link>
-            <Link href="/terms" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.terms}</Link>
-            <Link href="/privacy" className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.privacy}</Link>
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.home}</Link>
+            <button
+              type="button"
+              onClick={() => goToHomeSection('search-anchor')}
+              className="block w-full text-left py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric"
+            >
+              {copy.findDoctors}
+            </button>
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.about}</Link>
+            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-ink-navy/80 hover:text-warm-turmeric">{t.support}</Link>
           </div>
 
           <div className="pt-3 border-t border-hairline flex items-center justify-between">
@@ -280,10 +292,10 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
             <div className="flex items-center justify-between border-b border-hairline pb-3">
               <div>
                 <h3 className="font-bold text-ink-navy text-base font-display">{t.login}</h3>
-                <p className="text-slate-600 text-[11px]">Mobile number + password client login</p>
+                <p className="text-slate-600 text-[11px]">{copy.clientLoginHint}</p>
               </div>
               <button type="button" onClick={() => setLoginOpen(false)} className="text-slate-500 hover:text-ink-navy font-bold">
-                Close
+                {copy.close}
               </button>
             </div>
             {loginError && (
@@ -292,7 +304,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
               </div>
             )}
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">Mobile Number</label>
+              <label className="font-bold text-slate-700">{copy.mobileNumber}</label>
               <input
                 value={loginPhone}
                 onChange={(e) => setLoginPhone(e.target.value)}
@@ -300,7 +312,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold text-slate-700">Password</label>
+              <label className="font-bold text-slate-700">{copy.password}</label>
               <input
                 type="password"
                 value={loginPassword}

@@ -2,7 +2,8 @@
 
 import { Dispatch, SetStateAction } from 'react';
 import { Clock } from 'lucide-react';
-import { TranslationSet } from '@/lib/translations';
+import { Language, TranslationSet } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
 export interface PaymentPendingBooking {
   docId: string;
@@ -27,6 +28,7 @@ interface PaymentModalProps {
   lankaPayEnabled: boolean;
   cardPaymentEnabled: boolean;
   t: TranslationSet;
+  lang: Language;
   setPaymentMethod: Dispatch<SetStateAction<PaymentMethod>>;
   setCardNumber: Dispatch<SetStateAction<string>>;
   setCardExpiry: Dispatch<SetStateAction<string>>;
@@ -47,6 +49,7 @@ export default function PaymentModal({
   lankaPayEnabled,
   cardPaymentEnabled,
   t,
+  lang,
   setPaymentMethod,
   setCardNumber,
   setCardExpiry,
@@ -56,6 +59,7 @@ export default function PaymentModal({
 }: PaymentModalProps) {
   const commission = Math.round(booking.fee * (commissionRate / 100));
   const total = booking.fee + commission;
+  const copy = uiCopy[lang];
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="payment-modal">
@@ -63,12 +67,12 @@ export default function PaymentModal({
         <div className="bg-paper text-ink-navy p-5 flex items-center justify-between border-b border-hairline font-sans">
           <div className="space-y-0.5">
             <span className="text-[10px] bg-warm-turmeric text-ink-navy font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider font-sans">
-              PayHere Gateway
+              {copy.payhereGateway}
             </span>
             <h3 className="font-bold text-sm tracking-tight font-display">{t.simulatedGateway}</h3>
           </div>
           <button onClick={onCancel} className="text-slate-600 hover:text-ink-navy cursor-pointer transition-colors">
-            Cancel
+            {copy.cancel}
           </button>
         </div>
 
@@ -76,25 +80,25 @@ export default function PaymentModal({
           <div className="bg-amber-50 border-l-2 border-amber-500 p-3 rounded-r-xl flex space-x-2 text-amber-800">
             <Clock className="w-4 h-4 text-amber-655 flex-shrink-0 mt-0.5" />
             <span className="text-[10px] leading-relaxed font-medium">
-              {t.slotTimeoutWarning} Time left: {Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')}
+              {t.slotTimeoutWarning} {copy.timeLeft}: {Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')}
             </span>
           </div>
 
           <div className="bg-paper p-4 rounded-xl border border-hairline space-y-2">
             <div className="flex justify-between font-bold text-ink-navy">
-              <span>Specialist:</span>
+              <span>{copy.specialist}:</span>
               <span>{booking.docName}</span>
             </div>
             <div className="flex justify-between text-slate-600">
-              <span>Date & Time:</span>
+              <span>{copy.dateAndTime}:</span>
               <span>{booking.date} | {booking.time}</span>
             </div>
             <div className="flex justify-between text-slate-600 border-t border-hairline pt-2">
-              <span>Doctor Consultation Fee:</span>
+              <span>{copy.doctorFee}:</span>
               <span>LKR {booking.fee}</span>
             </div>
             <div className="flex justify-between text-slate-600">
-              <span>Platform Service commission:</span>
+              <span>{copy.platformCommission}:</span>
               <span>LKR {commission}</span>
             </div>
             <div className="flex justify-between text-amber-800 font-bold text-sm border-t border-hairline pt-2 font-display">
@@ -129,7 +133,7 @@ export default function PaymentModal({
           {paymentMethod === 'card' ? (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Card Number (Enter 12 digits for success, less to fail)</label>
+                <label className="font-bold text-slate-700">{copy.cardNumber} ({copy.cardHint})</label>
                 <input
                   type="text"
                   placeholder="4000 1234 5678 9010"
@@ -140,7 +144,7 @@ export default function PaymentModal({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Expiry Date</label>
+                  <label className="font-bold text-slate-700">{copy.expiryDate}</label>
                   <input
                     type="text"
                     placeholder="12/28"
@@ -150,7 +154,7 @@ export default function PaymentModal({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">CVV</label>
+                  <label className="font-bold text-slate-700">{copy.cvv}</label>
                   <input
                     type="password"
                     placeholder="•••"
@@ -163,15 +167,15 @@ export default function PaymentModal({
             </div>
           ) : (
             <div className="bg-sky-50 border border-sky-200 p-3.5 rounded-xl space-y-1 text-sky-800 font-medium animate-fade-in">
-              <span className="block font-bold">LankaPay Dynamic Routing</span>
-              <p className="text-[10px] leading-normal font-normal text-slate-600">Your payment request will be routed dynamically through LankaPay national switch instantly. Safe, local, and direct.</p>
+              <span className="block font-bold">{copy.lankaPayRouting}</span>
+              <p className="text-[10px] leading-normal font-normal text-slate-600">{copy.lankaPayText}</p>
             </div>
           )}
 
           {payStatus === 'processing' && (
             <div className="text-center py-2 text-slate-600 font-bold flex items-center justify-center space-x-1">
               <span className="w-3 h-3 rounded-full bg-warm-turmeric animate-ping mr-2" />
-              <span>Authorizing transaction via secure network...</span>
+              <span>{copy.authorizing}</span>
             </div>
           )}
 

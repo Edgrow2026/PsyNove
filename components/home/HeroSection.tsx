@@ -2,13 +2,16 @@
 
 import Image from 'next/image';
 import { Star } from 'lucide-react';
-import { TranslationSet } from '@/lib/translations';
+import { Language, TranslationSet } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
 interface HeroSectionProps {
   t: TranslationSet;
+  lang: Language;
 }
 
-export default function HeroSection({ t }: HeroSectionProps) {
+export default function HeroSection({ t, lang }: HeroSectionProps) {
+  const copy = uiCopy[lang];
   const scrollToSearch = () => {
     const searchSec = document.getElementById('search-anchor');
     if (searchSec) {
@@ -25,10 +28,10 @@ export default function HeroSection({ t }: HeroSectionProps) {
           <div className="lg:col-span-7 space-y-8 text-left">
             <div className="space-y-2">
               <span className="text-warm-turmeric text-xs sm:text-sm font-bold tracking-widest uppercase block">
-                Welcome To PsyNova
+                {copy.welcomeToPsyNova}
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-ink-navy leading-[1.1] max-w-2xl font-display">
-                The <span className="bg-warm-turmeric text-ink-navy px-4 py-1 rounded-2xl mx-1 font-black inline-block leading-none select-none shadow-md shadow-warm-turmeric/10">Healthy</span> Mind Is A Wealthy Soul
+                {copy.heroHeadlinePrefix} <span className="bg-warm-turmeric text-ink-navy px-4 py-1 rounded-2xl mx-1 font-black inline-block leading-none select-none shadow-md shadow-warm-turmeric/10">{copy.heroHeadlineHighlight}</span> {copy.heroHeadlineSuffix}
               </h1>
             </div>
 
@@ -53,15 +56,15 @@ export default function HeroSection({ t }: HeroSectionProps) {
                   </defs>
                 </svg>
                 <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[8px] text-red-600 uppercase tracking-widest font-mono font-bold">
-                  high stress (ලැදියාව)
+                  {copy.highStress}
                 </div>
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-amber-800 uppercase tracking-widest font-mono font-bold">
-                  calming shoreline (සන්සුන් වෙරළ)
+                  {copy.calmingShoreline}
                 </div>
               </div>
               <div className="flex justify-between items-center text-[10px] text-slate-600 font-sans">
-                <span>Sri Lanka Calming Shoreline Metaphor</span>
-                <span className="font-mono text-emerald-750">Transitioning anxiety into absolute peace</span>
+                <span>{copy.shorelineMeta}</span>
+                <span className="font-mono text-emerald-750">{copy.shorelineResult}</span>
               </div>
             </div>
 
@@ -74,14 +77,14 @@ export default function HeroSection({ t }: HeroSectionProps) {
                 onClick={scrollToSearch}
                 className="bg-warm-turmeric text-ink-navy hover:bg-warm-turmeric/90 text-xs sm:text-sm font-extrabold px-6 py-3.5 rounded-full flex items-center space-x-2.5 shadow-xl shadow-warm-turmeric/15 transition-all cursor-pointer group"
               >
-                <span>Let&apos;s Get Started</span>
+                <span>{copy.getStarted}</span>
                 <span className="text-base font-bold transition-transform group-hover:translate-x-1">→</span>
               </button>
 
               <button
                 onClick={scrollToSearch}
                 className="w-12 h-12 rounded-full border border-hairline flex items-center justify-center text-ink-navy hover:bg-paper hover:border-ink-navy/40 transition-all cursor-pointer shadow-md"
-                title="Watch Intro Video"
+                title={copy.watchIntro}
               >
                 <span className="text-xs ml-0.5">▶</span>
               </button>
@@ -112,7 +115,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
               </div>
               <div className="min-w-0 font-sans">
                 <span className="block text-[11px] font-bold text-ink-navy truncate">Dr. Ruwan Fernando</span>
-                <span className="block text-[9px] text-[#9E642A] font-medium truncate">Chief Psychiatrist / Founder</span>
+                <span className="block text-[9px] text-[#9E642A] font-medium truncate">{copy.founderTitle}</span>
               </div>
             </div>
 
@@ -123,8 +126,8 @@ export default function HeroSection({ t }: HeroSectionProps) {
                 ))}
               </div>
               <div>
-                <span className="block text-xs font-black text-ink-navy leading-tight">1000+ Happy Souls</span>
-                <span className="block text-[9px] text-slate-600 font-semibold uppercase tracking-wider">Active Patient Base</span>
+                <span className="block text-xs font-black text-ink-navy leading-tight">{copy.happySouls}</span>
+                <span className="block text-[9px] text-slate-600 font-semibold uppercase tracking-wider">{copy.activePatientBase}</span>
               </div>
               <div className="flex -space-x-1.5 pt-1 overflow-hidden">
                 {[1, 2, 3, 4].map((id) => (
@@ -149,21 +152,21 @@ export default function HeroSection({ t }: HeroSectionProps) {
         <div className="border-t border-hairline pt-12 mt-12 grid grid-cols-3 gap-4 max-w-5xl mx-auto font-sans">
           <div className="text-center space-y-1">
             <span className="block text-3xl sm:text-4xl font-extrabold text-ink-navy tracking-tight font-display">25+</span>
-            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">Years Experience</span>
+            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">{copy.yearsExperience}</span>
           </div>
           <div className="text-center space-y-1 border-x border-hairline">
             <span className="block text-3xl sm:text-4xl font-extrabold text-ink-navy tracking-tight font-display">7.8K+</span>
-            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">Active Members</span>
+            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">{copy.activeMembers}</span>
           </div>
           <div className="text-center space-y-1">
             <span className="block text-3xl sm:text-4xl font-extrabold text-amber-800 tracking-tight font-display">99%</span>
-            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">Satisfied Client</span>
+            <span className="block text-[10px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wider">{copy.satisfiedClient}</span>
           </div>
         </div>
 
         <div className="pt-10 border-t border-hairline space-y-5 max-w-5xl mx-auto font-sans">
           <span className="block text-center text-xs text-slate-600 font-bold tracking-widest uppercase">
-            Trusted By 100,245+ PsyNova Patients Across Sri Lanka
+            {copy.trustedPatients}
           </span>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 opacity-30 hover:opacity-45 transition-opacity duration-300 select-none">
             {['logo-1', 'logo-2', 'logo-3', 'logo-4', 'logo-5'].map((logo, idx) => (

@@ -17,6 +17,7 @@ import Footer from '../components/layout/Footer';
 import RoleDashboardSection from '../components/dashboard/RoleDashboardSection';
 import { store, AppState, Psychiatrist, Booking, Complaint, ClientProfile } from '../lib/store';
 import { translations, Language } from '../lib/translations';
+import { uiCopy } from '../lib/ui-copy';
 
 export default function HomePage() {
   const [state, setState] = useState<AppState>(() => store.getState());
@@ -96,6 +97,7 @@ export default function HomePage() {
 
   const t = translations[state.currentLanguage];
   const lang = state.currentLanguage;
+  const copy = uiCopy[lang];
 
   // Filter and Search Logic
   const filteredDoctors = state.psychiatrists.filter(doc => {
@@ -132,14 +134,14 @@ export default function HomePage() {
           setPayStatus('failed');
           setShowPaymentModal(false);
           setPaymentPendingBooking(null);
-          alert('Payment window expired. The appointment slot has been released.');
+          alert(copy.paymentExpired);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [showPaymentModal, paymentPendingBooking]);
+  }, [showPaymentModal, paymentPendingBooking, copy.paymentExpired]);
 
   const handleBookTrigger = (doc: Psychiatrist, slotStr: string) => {
     // 1. If unauthenticated, trigger registration/login flow
@@ -163,7 +165,7 @@ export default function HomePage() {
       setPaymentCountdown(300);
       setShowPaymentModal(true);
     } else {
-      alert("Please switch role to Client to book an appointment!");
+      alert(copy.switchToClient);
     }
   };
 
@@ -352,7 +354,7 @@ export default function HomePage() {
     if (!newSlotDateTime || !state.loggedInUserId) return;
     store.addSlot(state.loggedInUserId, newSlotDateTime);
     setNewSlotDateTime('');
-    alert("Slot published successfully!");
+    alert(copy.slotPublished);
   };
 
   // Session Action
@@ -424,7 +426,7 @@ export default function HomePage() {
     setDocQualifications('');
     setDocBio('');
 
-    alert("Registration submitted! Undergoing mandatory SLMC verification by PsyNova Admins.");
+    alert(copy.doctorRegistrationSubmitted);
   };
 
   const handleExportCSV = () => {
@@ -449,17 +451,18 @@ export default function HomePage() {
       <PwaRegister />
       <Navbar activeSection="home" />
 
-      <HeroSection t={t} />
+      <HeroSection t={t} lang={lang} />
 
       {/* Main Search Filters and Listing Area */}
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-16">
         
-        <AboutPreview />
+        <AboutPreview lang={lang} />
 
-        <WhyChooseUs />
+        <WhyChooseUs lang={lang} />
 
         <DoctorSearchSection
           t={t}
+          lang={lang}
           searchQuery={searchQuery}
           selectedDistrict={selectedDistrict}
           selectedLanguage={selectedLanguage}
@@ -512,7 +515,7 @@ export default function HomePage() {
 
       </main>
 
-      <Footer />
+      <Footer lang={lang} />
 
       {/* --- ALL MODALS & FLYOUTS (Single-screen architecture) --- */}
 
@@ -522,6 +525,7 @@ export default function HomePage() {
           bookingSlot={bookingSlot}
           districtList={districtList}
           t={t}
+          lang={lang}
           regName={regName}
           regNIC={regNIC}
           regPhone={regPhone}
@@ -553,6 +557,7 @@ export default function HomePage() {
           lankaPayEnabled={state.config.lankaPayEnabled}
           cardPaymentEnabled={state.config.cardPaymentEnabled}
           t={t}
+          lang={lang}
           setPaymentMethod={setPaymentMethod}
           setCardNumber={setCardNumber}
           setCardExpiry={setCardExpiry}
@@ -568,6 +573,7 @@ export default function HomePage() {
       {activeVideoRoom && (
         <VideoRoomModal
           booking={activeVideoRoom}
+          lang={lang}
           onClose={() => setActiveVideoRoom(null)}
         />
       )}
@@ -578,6 +584,7 @@ export default function HomePage() {
           notes={sessionReportNotes}
           sessionSuccessMsg={sessionSuccessMsg}
           t={t}
+          lang={lang}
           setNotes={setSessionReportNotes}
           onClose={() => setActiveSessionRoom(null)}
           onFileIncident={() => {
@@ -594,6 +601,7 @@ export default function HomePage() {
           complaintNotes={complaintNotes}
           complaintSuccess={complaintSuccess}
           t={t}
+          lang={lang}
           setComplaintNotes={setComplaintNotes}
           onClose={() => setActiveComplaintBooking(null)}
           onSubmit={handleFileComplaintSubmit}

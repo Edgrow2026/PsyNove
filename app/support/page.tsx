@@ -66,7 +66,13 @@ export default function SupportPage() {
       formPhone: "ජංගම දුරකථන අංකය",
       formNotes: "ගැටලුව පිළිබඳ කෙටි විස්තරයක්",
       formSubmit: "ටිකට්පත ඉදිරිපත් කරන්න",
-      formSuccess: "ටිකට්පත සාර්ථකව ලැබුණි! ඔබගේ දුරකථනයට කෙටි පණිවිඩයක් (SMS) යවා ඇත."
+      formSuccess: "ටිකට්පත සාර්ථකව ලැබුණි! ඔබගේ දුරකථනයට කෙටි පණිවිඩයක් (SMS) යවා ඇත.",
+      nationalHelpline: "ජාතික උපකාරක අංකය",
+      aiTyping: "AI පිළිතුර සකසමින්...",
+      aiFallback: "මට පිළිතුරක් සකස් කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+      aiConnectionError: "සම්බන්ධතාව බිඳ වැටුණි. කරුණාකර නැවත උත්සාහ කරන්න.",
+      notesPlaceholder: "වෙන්කළ සැසියට ඇතුල් වීමට මට ගැටලුවක් තිබේ...",
+      footer: "© 2026 PsyNova සහාය මධ්‍යස්ථානය. ශ්‍රී ලංකා ප්‍රධාන කාර්යාලය."
     },
     ta: {
       title: "உதவி மையம்",
@@ -82,7 +88,13 @@ export default function SupportPage() {
       formPhone: "கைபேசி எண்",
       formNotes: "பிரச்சினையின் சுருக்கமான விபரம்",
       formSubmit: "டிக்கெட்டைச் சமர்ப்பி",
-      formSuccess: "டிக்கெட் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது! உங்களது கைபேசிக்கு உறுதிப்படுத்தல் SMS அனுப்பப்பட்டுள்ளது."
+      formSuccess: "டிக்கெட் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது! உங்களது கைபேசிக்கு உறுதிப்படுத்தல் SMS அனுப்பப்பட்டுள்ளது.",
+      nationalHelpline: "தேசிய உதவி எண்",
+      aiTyping: "AI பதில் தட்டச்சு செய்கிறது...",
+      aiFallback: "மன்னிக்கவும், பதிலை உருவாக்க முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+      aiConnectionError: "இணைப்பு துண்டிக்கப்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+      notesPlaceholder: "என் முன்பதிவு செய்யப்பட்ட ஆலோசனையை அணுகுவதில் சிக்கல் உள்ளது...",
+      footer: "© 2026 PsyNova உதவி மையம். இலங்கை தலைமையகம்."
     },
     en: {
       title: "Support Hub",
@@ -98,7 +110,13 @@ export default function SupportPage() {
       formPhone: "Mobile Phone Number",
       formNotes: "Describe your inquiry or system issue",
       formSubmit: "Dispatch Ticket",
-      formSuccess: "Support Ticket logged successfully! A confirmation SMS has been dispatched."
+      formSuccess: "Support Ticket logged successfully! A confirmation SMS has been dispatched.",
+      nationalHelpline: "National Helpline",
+      aiTyping: "AI typing...",
+      aiFallback: "I apologize, but I could not compute a reply. Please try again.",
+      aiConnectionError: "Connection disrupted. Please retry.",
+      notesPlaceholder: "I am having trouble accessing my booked appointment on Dr. Ruwan's list...",
+      footer: "© 2026 PsyNova Support Center. Sri Lanka Headquarters."
     }
   }[lang];
 
@@ -127,14 +145,14 @@ export default function SupportPage() {
       setChatMessages(prev => [...prev, {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
-        text: data.text || "I apologize, but I could not compute a reply. Please try again."
+        text: data.text || supportTexts.aiFallback
       }]);
     } catch (err) {
       console.error(err);
       setChatMessages(prev => [...prev, {
         id: `ai-err-${Date.now()}`,
         sender: 'assistant',
-        text: "Connection disrupted. Please retry."
+        text: supportTexts.aiConnectionError
       }]);
     } finally {
       setIsGenerating(false);
@@ -204,7 +222,7 @@ export default function SupportPage() {
                   <PhoneCall className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="block text-[10px] text-slate-500 font-semibold uppercase">National Helpline</span>
+                  <span className="block text-[10px] text-slate-500 font-semibold uppercase">{supportTexts.nationalHelpline}</span>
                   <span className="text-sm font-bold text-ink-navy">1926 (Free 24/7)</span>
                 </div>
               </div>
@@ -263,7 +281,7 @@ export default function SupportPage() {
               {isGenerating && (
                 <div className="flex items-center space-x-2 text-slate-600 italic">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-warm-turmeric" />
-                  <span>AI typing...</span>
+                  <span>{supportTexts.aiTyping}</span>
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -338,7 +356,7 @@ export default function SupportPage() {
                   value={ticketNotes}
                   onChange={(e) => setTicketNotes(e.target.value)}
                   className="w-full bg-paper border border-hairline rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden text-ink-navy"
-                  placeholder="I am having trouble accessing my booked appointment on Dr. Ruwan's list..."
+                  placeholder={supportTexts.notesPlaceholder}
                 />
               </div>
 
@@ -356,7 +374,7 @@ export default function SupportPage() {
 
       {/* Footer */}
       <footer className="bg-paper text-slate-500 py-6 border-t border-hairline text-center text-xs">
-        <p>© 2026 PsyNova Support Center. Sri Lanka Headquarters.</p>
+        <p>{supportTexts.footer}</p>
       </footer>
 
       <SimulatorSettings />

@@ -1,8 +1,15 @@
 'use client';
 
 import { Activity, HeartHandshake } from 'lucide-react';
+import { Language } from '@/lib/translations';
+import { uiCopy } from '@/lib/ui-copy';
 
-export default function AboutPreview() {
+interface AboutPreviewProps {
+  lang: Language;
+}
+
+export default function AboutPreview({ lang }: AboutPreviewProps) {
+  const copy = uiCopy[lang];
   const scrollToSearch = () => {
     const searchSec = document.getElementById('search-anchor');
     if (searchSec) {
@@ -18,9 +25,9 @@ export default function AboutPreview() {
             <div className="bg-warm-turmeric/10 p-2.5 rounded-xl w-fit">
               <Activity className="w-5 h-5 text-warm-turmeric" />
             </div>
-            <h4 className="font-extrabold text-sm text-ink-navy font-display">Our Vision</h4>
+            <h4 className="font-extrabold text-sm text-ink-navy font-display">{copy.ourVision}</h4>
             <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
-              Pioneering state-of-the-art mental care accessibility for every home across Sri Lanka.
+              {copy.ourVisionText}
             </p>
           </div>
 
@@ -28,9 +35,9 @@ export default function AboutPreview() {
             <div className="bg-warm-turmeric/10 p-2.5 rounded-xl w-fit">
               <HeartHandshake className="w-5 h-5 text-warm-turmeric" />
             </div>
-            <h4 className="font-extrabold text-sm text-ink-navy font-display">Our Mission</h4>
+            <h4 className="font-extrabold text-sm text-ink-navy font-display">{copy.ourMission}</h4>
             <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
-              Delivering empathetic, fully certified and secure tele-health treatments instantly.
+              {copy.ourMissionText}
             </p>
           </div>
         </div>
@@ -38,21 +45,21 @@ export default function AboutPreview() {
 
       <div className="lg:col-span-6 space-y-6 text-left font-sans">
         <div className="space-y-1.5">
-          <span className="text-warm-turmeric text-xs font-bold uppercase tracking-wider block">About Us</span>
+          <span className="text-warm-turmeric text-xs font-bold uppercase tracking-wider block">{copy.aboutUs}</span>
           <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-ink-navy leading-tight font-display">
-            Quality Care From Quality <span className="border border-warm-turmeric/35 text-warm-turmeric bg-warm-turmeric/10 px-3 py-0.5 rounded-2xl mx-1 font-bold inline-block select-none shadow-md shadow-warm-turmeric/5">Experts</span>
+            {copy.qualityCarePrefix} <span className="border border-warm-turmeric/35 text-warm-turmeric bg-warm-turmeric/10 px-3 py-0.5 rounded-2xl mx-1 font-bold inline-block select-none shadow-md shadow-warm-turmeric/5">{copy.qualityCareHighlight}</span>
           </h2>
         </div>
 
         <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-          At PsyNova, we gather Sri Lanka&apos;s leading licensed psychiatrists to assist you through virtual consultation sessions. From diagnostic checkups to treatment programs, our platform guarantees highly certified, discrete and supportive clinical results without high hospital costs or travel constraints.
+          {copy.aboutPreviewText}
         </p>
 
         <button
           onClick={scrollToSearch}
           className="bg-warm-turmeric text-ink-navy hover:bg-warm-turmeric/90 text-xs font-extrabold px-6 py-3 rounded-full flex items-center space-x-2 transition-all cursor-pointer shadow-md"
         >
-          <span>Learn More</span>
+          <span>{copy.learnMore}</span>
           <span>→</span>
         </button>
       </div>

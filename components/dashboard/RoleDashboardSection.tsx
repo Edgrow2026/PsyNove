@@ -38,6 +38,246 @@ interface RoleDashboardSectionProps {
   handleExportCSV: () => void;
 }
 
+const dashboardCopy = {
+  en: {
+    doctorOnboarding: 'Psychiatrist Onboarding',
+    doctorOnboardingSub: 'Register, verify your SLMC credentials, and start consultation services.',
+    doctorName: 'Legal Full Name',
+    slmcNumber: 'SLMC Number',
+    feePerSession: 'Fee per session (LKR)',
+    district: 'District',
+    slmcProof: 'Registry proof file name',
+    sandboxProofNote: 'Sandbox mode stores the file name only. Production should upload and verify the actual PDF/image.',
+    professionalQualifications: 'Professional Qualifications',
+    bioSummary: 'Bio Summary',
+    bioPlaceholder: 'Provide short clinical bio description...',
+    onboardingButton: 'Onboard On Platform',
+    deactivateConfirm: 'Are you sure you want to deactivate?',
+    deactivateScheduled: 'Profile enters a mandatory 7-calendar-day safety hold. Deactivation request scheduled!',
+    profileManagement: 'Profile Management',
+    name: 'Name',
+    mobile: 'Mobile',
+    email: 'Email',
+    updateMobile: 'Update mobile number',
+    updateEmail: 'Update email',
+    editProfile: 'Edit Profile',
+    paymentHistory: 'Payment History',
+    bookingId: 'Booking ID',
+    doctor: 'Doctor',
+    scheduledDate: 'Scheduled Date',
+    amount: 'Amount',
+    status: 'Status',
+    actions: 'Actions',
+    reminderQueued: 'Appointment reminder SMS queued in sandbox log.',
+    diagnosisPrescriptions: 'Diagnosis & Prescriptions',
+    specialist: 'Specialist',
+    boostConfirm: 'Boost profile to home page carousel',
+    simulatedPackage: 'Simulated Package Transaction',
+    boostActivated: 'Boost package activated! Your profile now displays in the prominent Homepage Carousel.',
+    profileSlmc: 'Profile & SLMC Document',
+    registryProof: 'Registry proof',
+    verifiedSeed: 'Verified from seed registry record',
+    updateFee: 'Update consultation fee',
+    updateBio: 'Update profile bio',
+    doctorHoldQueued: 'Doctor account enters the 7-calendar-day hold queue.',
+    add: 'Add',
+    platformCommissionBand: 'Platform Commission Band',
+    totalConsultations: 'Total Consultations',
+    patientName: 'Patient Name',
+    patientNic: 'Patient NIC',
+    startConsultation: 'Start Consultation',
+    reportApproved: 'Report Filed & Approved',
+    adminSub: 'Verify SLMC licenses, moderate disputes, configure platform parameters.',
+    exportCsv: 'Export Booking Reports (CSV)',
+    totalVerified: 'Total Verified Psychiatrists',
+    pendingApproval: 'Pending Approval',
+    totalClientAccounts: 'Total Client Accounts',
+    grossRevenue: 'Gross Facilitation Revenue',
+    clientControls: 'Client Account Controls',
+    transactionsRefund: 'Transactions & Refund Approval',
+    refundConfirm: 'Approve manual refund for booking',
+    slmcAudit: 'Mandatory SLMC Registry Auditing',
+    noComplaints: 'No user grievances or incident reports logged.',
+    resolutionPlaceholder: 'Write resolution decision...',
+    complaintResolved: 'Complaint resolved manually and notifications sent!',
+    resolvedDecision: 'Resolved Decision',
+    superadminSub: 'Adjust global commission policies, manage administrative users, and analyze revenue margins.',
+    commissionNote: 'Commission values must remain strictly within the 15% - 20% bracket.',
+    rate: 'Rate',
+    commissionSet: 'Platform commission successfully set',
+    futureBookings: 'on future bookings!',
+    smsConfig: 'SMS Gateway Configuration',
+    apiEndpoint: 'API Gateway Endpoint',
+    senderId: 'Gateway Mask / Sender ID',
+    boostPaymentSettings: 'Boosting & Payment Settings',
+    boostPrice: 'Boost Package Price (LKR)',
+    lankaPayEnabled: 'LankaPay enabled',
+    cardEnabled: 'Visa/Mastercard enabled',
+    adminAccounts: 'Admin Accounts & Permissions',
+    adminName: 'Admin name',
+    adminRole: 'Admin role',
+    permissionsPrompt: 'Permissions comma separated',
+  },
+  si: {
+    doctorOnboarding: 'මනෝ වෛද්‍ය ලියාපදිංචිය',
+    doctorOnboardingSub: 'SLMC අක්තපත්‍ර සත්‍යාපනය කර උපදේශන සේවා ආරම්භ කරන්න.',
+    doctorName: 'නීතිමය සම්පූර්ණ නම',
+    slmcNumber: 'SLMC අංකය',
+    feePerSession: 'සැසියකට ගාස්තුව (LKR)',
+    district: 'දිස්ත්‍රික්කය',
+    slmcProof: 'ලියාපදිංචි සාක්ෂි ගොනු නම',
+    sandboxProofNote: 'Sandbox mode තුළ ගොනු නම පමණක් සුරකියි. Production තුළ සැබෑ PDF/image upload කර verify කළ යුතුය.',
+    professionalQualifications: 'වෘත්තීය සුදුසුකම්',
+    bioSummary: 'කෙටි ජීව දත්ත',
+    bioPlaceholder: 'කෙටි සායනික bio විස්තරයක් ලියන්න...',
+    onboardingButton: 'වේදිකාවට ලියාපදිංචි කරන්න',
+    deactivateConfirm: 'ගිණුම අක්‍රීය කිරීමට ඔබට විශ්වාසද?',
+    deactivateScheduled: 'පැතිකඩ දින 7ක අනිවාර්ය safety hold වෙත යවයි. අක්‍රීය කිරීම සැලසුම් කරන ලදී!',
+    profileManagement: 'පැතිකඩ කළමනාකරණය',
+    name: 'නම',
+    mobile: 'ජංගම',
+    email: 'ඊමේල්',
+    updateMobile: 'ජංගම අංකය යාවත්කාලීන කරන්න',
+    updateEmail: 'ඊමේල් යාවත්කාලීන කරන්න',
+    editProfile: 'පැතිකඩ සංස්කරණය',
+    paymentHistory: 'ගෙවීම් ඉතිහාසය',
+    bookingId: 'වෙන්කිරීම් අංකය',
+    doctor: 'වෛද්‍යවරයා',
+    scheduledDate: 'නියමිත දිනය',
+    amount: 'මුදල',
+    status: 'තත්ත්වය',
+    actions: 'ක්‍රියා',
+    reminderQueued: 'වෙන්කිරීම් මතක් කිරීමේ SMS එක sandbox log වෙත යවන ලදී.',
+    diagnosisPrescriptions: 'රෝග නිර්ණය සහ ඖෂධ නියම',
+    specialist: 'විශේෂඥයා',
+    boostConfirm: 'පැතිකඩ homepage carousel වෙත boost කරන්න',
+    simulatedPackage: 'Simulated package transaction',
+    boostActivated: 'Boost package සක්‍රීයයි! ඔබේ පැතිකඩ homepage carousel තුළ පෙන්වයි.',
+    profileSlmc: 'පැතිකඩ සහ SLMC ලේඛනය',
+    registryProof: 'ලියාපදිංචි සාක්ෂිය',
+    verifiedSeed: 'Seed registry record මඟින් සත්‍යාපිතයි',
+    updateFee: 'උපදේශන ගාස්තුව යාවත්කාලීන කරන්න',
+    updateBio: 'පැතිකඩ bio යාවත්කාලීන කරන්න',
+    doctorHoldQueued: 'වෛද්‍ය ගිණුම දින 7ක hold queue වෙත යවයි.',
+    add: 'එකතු කරන්න',
+    platformCommissionBand: 'වේදිකා කොමිස් පරාසය',
+    totalConsultations: 'මුළු උපදේශන',
+    patientName: 'රෝගියාගේ නම',
+    patientNic: 'රෝගියාගේ NIC',
+    startConsultation: 'උපදේශනය ආරම්භ කරන්න',
+    reportApproved: 'වාර්තාව යවා අනුමතයි',
+    adminSub: 'SLMC බලපත්‍ර verify කරන්න, disputes moderate කරන්න, platform settings සකසන්න.',
+    exportCsv: 'වෙන්කිරීම් වාර්තා CSV ලෙස export කරන්න',
+    totalVerified: 'සත්‍යාපිත මනෝ වෛද්‍යවරු',
+    pendingApproval: 'අනුමැතිය සඳහා pending',
+    totalClientAccounts: 'මුළු සේවාලාභී ගිණුම්',
+    grossRevenue: 'මුළු පහසුකම් ආදායම',
+    clientControls: 'සේවාලාභී ගිණුම් පාලනය',
+    transactionsRefund: 'ගනුදෙනු සහ refund අනුමැතිය',
+    refundConfirm: 'manual refund අනුමත කරන්න: booking',
+    slmcAudit: 'අනිවාර්ය SLMC registry audit',
+    noComplaints: 'පරිශීලක පැමිණිලි හෝ incident reports නොමැත.',
+    resolutionPlaceholder: 'විසඳුම් තීරණය ලියන්න...',
+    complaintResolved: 'පැමිණිල්ල අතින් විසඳා notifications යවන ලදී!',
+    resolvedDecision: 'විසඳූ තීරණය',
+    superadminSub: 'Global commission policies සකසන්න, admins කළමනාකරණය කරන්න, revenue margins විශ්ලේෂණය කරන්න.',
+    commissionNote: 'Commission අගයන් 15% - 20% පරාසය තුළම තිබිය යුතුය.',
+    rate: 'අනුපාතය',
+    commissionSet: 'Platform commission සාර්ථකව සකසන ලදී',
+    futureBookings: 'ඉදිරි වෙන්කිරීම් සඳහා!',
+    smsConfig: 'SMS gateway සැකසුම්',
+    apiEndpoint: 'API gateway endpoint',
+    senderId: 'Gateway mask / sender ID',
+    boostPaymentSettings: 'Boosting සහ payment settings',
+    boostPrice: 'Boost package price (LKR)',
+    lankaPayEnabled: 'LankaPay සක්‍රීයයි',
+    cardEnabled: 'Visa/Mastercard සක්‍රීයයි',
+    adminAccounts: 'Admin ගිණුම් සහ අවසර',
+    adminName: 'Admin නම',
+    adminRole: 'Admin භූමිකාව',
+    permissionsPrompt: 'අවසර comma වලින් වෙන් කර ලියන්න',
+  },
+  ta: {
+    doctorOnboarding: 'மனநல மருத்துவர் பதிவு',
+    doctorOnboardingSub: 'SLMC சான்றுகளை சரிபார்த்து ஆலோசனை சேவைகளைத் தொடங்குங்கள்.',
+    doctorName: 'சட்டப்பூர்வ முழுப் பெயர்',
+    slmcNumber: 'SLMC எண்',
+    feePerSession: 'ஒரு அமர்வுக்கான கட்டணம் (LKR)',
+    district: 'மாவட்டம்',
+    slmcProof: 'பதிவு சான்று கோப்பு பெயர்',
+    sandboxProofNote: 'Sandbox mode கோப்பு பெயரை மட்டும் சேமிக்கும். Production-இல் உண்மையான PDF/image upload செய்து verify செய்ய வேண்டும்.',
+    professionalQualifications: 'தொழில்முறை தகுதிகள்',
+    bioSummary: 'சுருக்கமான bio',
+    bioPlaceholder: 'சுருக்கமான மருத்துவ bio விவரத்தை எழுதவும்...',
+    onboardingButton: 'தளத்தில் பதிவு செய்',
+    deactivateConfirm: 'கணக்கை செயலிழக்கச் செய்ய உறுதியாக உள்ளீர்களா?',
+    deactivateScheduled: 'சுயவிவரம் கட்டாய 7 நாள் safety hold-க்கு செல்கிறது. செயலிழப்பு கோரிக்கை திட்டமிடப்பட்டது!',
+    profileManagement: 'சுயவிவர மேலாண்மை',
+    name: 'பெயர்',
+    mobile: 'கைபேசி',
+    email: 'மின்னஞ்சல்',
+    updateMobile: 'கைபேசி எண்ணை புதுப்பிக்கவும்',
+    updateEmail: 'மின்னஞ்சலை புதுப்பிக்கவும்',
+    editProfile: 'சுயவிவரத்தைத் திருத்து',
+    paymentHistory: 'கட்டண வரலாறு',
+    bookingId: 'முன்பதிவு ID',
+    doctor: 'மருத்துவர்',
+    scheduledDate: 'திட்டமிட்ட தேதி',
+    amount: 'தொகை',
+    status: 'நிலை',
+    actions: 'செயல்கள்',
+    reminderQueued: 'முன்பதிவு நினைவூட்டல் SMS sandbox log-க்கு அனுப்பப்பட்டது.',
+    diagnosisPrescriptions: 'நோயறிதல் மற்றும் மருந்துகள்',
+    specialist: 'நிபுணர்',
+    boostConfirm: 'சுயவிவரத்தை homepage carousel-க்கு boost செய்யவும்',
+    simulatedPackage: 'Simulated package transaction',
+    boostActivated: 'Boost package செயல்படுத்தப்பட்டது! உங்கள் சுயவிவரம் homepage carousel-ல் தெரியும்.',
+    profileSlmc: 'சுயவிவரம் மற்றும் SLMC ஆவணம்',
+    registryProof: 'பதிவு சான்று',
+    verifiedSeed: 'Seed registry record மூலம் சரிபார்க்கப்பட்டது',
+    updateFee: 'ஆலோசனை கட்டணத்தை புதுப்பிக்கவும்',
+    updateBio: 'சுயவிவர bio புதுப்பிக்கவும்',
+    doctorHoldQueued: 'மருத்துவர் கணக்கு 7 நாள் hold queue-க்கு செல்கிறது.',
+    add: 'சேர்',
+    platformCommissionBand: 'தள கமிஷன் வரம்பு',
+    totalConsultations: 'மொத்த ஆலோசனைகள்',
+    patientName: 'நோயாளி பெயர்',
+    patientNic: 'நோயாளி NIC',
+    startConsultation: 'ஆலோசனையைத் தொடங்கு',
+    reportApproved: 'அறிக்கை சமர்ப்பிக்கப்பட்டு அங்கீகரிக்கப்பட்டது',
+    adminSub: 'SLMC உரிமங்களை verify செய்யவும், disputes moderate செய்யவும், platform settings அமைக்கவும்.',
+    exportCsv: 'முன்பதிவு அறிக்கைகளை CSV ஆக export செய்',
+    totalVerified: 'மொத்த சரிபார்க்கப்பட்ட மனநல மருத்துவர்கள்',
+    pendingApproval: 'அங்கீகாரம் நிலுவை',
+    totalClientAccounts: 'மொத்த பயனர் கணக்குகள்',
+    grossRevenue: 'மொத்த வசதி வருவாய்',
+    clientControls: 'பயனர் கணக்கு கட்டுப்பாடு',
+    transactionsRefund: 'பரிவர்த்தனை மற்றும் refund அங்கீகாரம்',
+    refundConfirm: 'manual refund அங்கீகரிக்கவும்: booking',
+    slmcAudit: 'கட்டாய SLMC registry audit',
+    noComplaints: 'பயனர் புகார்கள் அல்லது incident reports இல்லை.',
+    resolutionPlaceholder: 'தீர்வு முடிவை எழுதவும்...',
+    complaintResolved: 'புகார் கைமுறையாக தீர்க்கப்பட்டு notifications அனுப்பப்பட்டது!',
+    resolvedDecision: 'தீர்க்கப்பட்ட முடிவு',
+    superadminSub: 'Global commission policies அமைக்கவும், admins மேலாண்மை செய்யவும், revenue margins ஆய்வு செய்யவும்.',
+    commissionNote: 'Commission மதிப்புகள் 15% - 20% வரம்பிற்குள் இருக்க வேண்டும்.',
+    rate: 'விகிதம்',
+    commissionSet: 'Platform commission வெற்றிகரமாக அமைக்கப்பட்டது',
+    futureBookings: 'எதிர்கால முன்பதிவுகளுக்கு!',
+    smsConfig: 'SMS gateway அமைப்பு',
+    apiEndpoint: 'API gateway endpoint',
+    senderId: 'Gateway mask / sender ID',
+    boostPaymentSettings: 'Boosting மற்றும் payment settings',
+    boostPrice: 'Boost package price (LKR)',
+    lankaPayEnabled: 'LankaPay இயங்குகிறது',
+    cardEnabled: 'Visa/Mastercard இயங்குகிறது',
+    adminAccounts: 'Admin கணக்குகள் மற்றும் அனுமதிகள்',
+    adminName: 'Admin பெயர்',
+    adminRole: 'Admin பங்கு',
+    permissionsPrompt: 'அனுமதிகளை comma கொண்டு பிரித்து எழுதவும்',
+  },
+};
+
 export default function RoleDashboardSection({
   state,
   t,
@@ -70,6 +310,8 @@ export default function RoleDashboardSection({
   handleStartConsultation,
   handleExportCSV,
 }: RoleDashboardSectionProps) {
+  const copy = dashboardCopy[state.currentLanguage];
+
   return (
     <>
         {/* Dynamic Contextual Stakeholder Portal Views */}
@@ -79,13 +321,13 @@ export default function RoleDashboardSection({
           {state.currentRole === 'guest' && (
             <div className="bg-white rounded-2xl border border-hairline p-8 shadow-sm max-w-3xl mx-auto space-y-6 animate-fade-in font-sans">
               <div className="text-center space-y-2">
-                <h3 className="text-xl sm:text-2xl font-bold text-ink-navy tracking-tight font-display">වෘත්තීය මනෝ වෛද්‍යවරුන් ලියාපදිංචිය / Psychiatrist Onboarding</h3>
-                <p className="text-slate-600 text-xs sm:text-sm font-normal">ලියාපදිංචි වී ශ්‍රී ලංකා වෛද්‍ය සභාවේ (SLMC) සහතිකපත්‍රය සත්‍යාපනය කර උපදේශන සේවා අරඹන්න.</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-ink-navy tracking-tight font-display">{copy.doctorOnboarding}</h3>
+                <p className="text-slate-600 text-xs sm:text-sm font-normal">{copy.doctorOnboardingSub}</p>
               </div>
 
               <form onSubmit={handleDoctorRegisterSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">වෛද්‍ය නම / Legal Full Name</label>
+                  <label className="font-bold text-slate-700">{copy.doctorName}</label>
                   <input 
                     type="text" 
                     required 
@@ -96,7 +338,7 @@ export default function RoleDashboardSection({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">SLMC ලියාපදිංචි අංකය / SLMC Number</label>
+                  <label className="font-bold text-slate-700">{copy.slmcNumber}</label>
                   <input 
                     type="text" 
                     required 
@@ -107,7 +349,7 @@ export default function RoleDashboardSection({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">උපදේශන ගාස්තුව / Fee per session (LKR)</label>
+                  <label className="font-bold text-slate-700">{copy.feePerSession}</label>
                   <input 
                     type="number" 
                     required 
@@ -117,7 +359,7 @@ export default function RoleDashboardSection({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">ප්‍රාදේශීය දිස්ත්‍රික්කය / District</label>
+                  <label className="font-bold text-slate-700">{copy.district}</label>
                   <select
                     value={docDistrict}
                     onChange={(e) => setDocDistrict(e.target.value)}
@@ -129,7 +371,7 @@ export default function RoleDashboardSection({
                   </select>
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="font-bold text-slate-700">SLMC සහතිකය / Registry proof file name</label>
+                  <label className="font-bold text-slate-700">{copy.slmcProof}</label>
                   <input
                     type="text"
                     required
@@ -138,10 +380,10 @@ export default function RoleDashboardSection({
                     onChange={(e) => setDocSLMCDocument(e.target.value)}
                     className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:border-warm-turmeric focus:outline-hidden"
                   />
-                  <p className="text-[10px] text-slate-500">Sandbox mode stores the file name only. Production should upload and verify the actual PDF/image.</p>
+                  <p className="text-[10px] text-slate-500">{copy.sandboxProofNote}</p>
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="font-bold text-slate-700">වෛද්‍ය සුදුසුකම් / Professional Qualifications</label>
+                  <label className="font-bold text-slate-700">{copy.professionalQualifications}</label>
                   <input 
                     type="text" 
                     required 
@@ -152,11 +394,11 @@ export default function RoleDashboardSection({
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="font-bold text-slate-700">කෙටි ජීව දත්ත විස්තරය / Bio Summary</label>
+                  <label className="font-bold text-slate-700">{copy.bioSummary}</label>
                   <textarea 
                     rows={3} 
                     required 
-                    placeholder="Provide short clinical bio description..."
+                    placeholder={copy.bioPlaceholder}
                     value={docBio}
                     onChange={(e) => setDocBio(e.target.value)}
                     className="w-full border border-hairline bg-paper text-ink-navy rounded-xl p-2.5 focus:ring-1 focus:ring-warm-turmeric focus:border-warm-turmeric focus:outline-hidden"
@@ -167,7 +409,7 @@ export default function RoleDashboardSection({
                   type="submit" 
                   className="sm:col-span-2 bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy font-bold py-2.5 rounded-xl transition-all duration-300 text-xs tracking-wide cursor-pointer shadow-md shadow-warm-turmeric/10"
                 >
-                  Onboarding On Platform
+                  {copy.onboardingButton}
                 </button>
               </form>
             </div>
@@ -183,9 +425,9 @@ export default function RoleDashboardSection({
                 </div>
                 <button
                   onClick={() => {
-                    if (confirm(t.deactivateHoldWarning + "\n\nAre you sure you want to deactivate?")) {
+                    if (confirm(`${t.deactivateHoldWarning}\n\n${copy.deactivateConfirm}`)) {
                       store.deactivateClient(state.loggedInUserId || 'client-1');
-                      alert("Profile enters a mandatory 7-calendar-day safety hold. Deactivation request scheduled!");
+                      alert(copy.deactivateScheduled);
                     }
                   }}
                   className="mt-3 sm:mt-0 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 w-fit border border-red-200 cursor-pointer transition-all"
@@ -198,31 +440,31 @@ export default function RoleDashboardSection({
               {/* Client Profile & Payment Ledger */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-paper border border-hairline rounded-2xl p-4 space-y-3">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Profile Management</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.profileManagement}</h4>
                   {(() => {
                     const client = state.clients.find(c => c.id === (state.loggedInUserId || 'client-1'));
                     if (!client) return null;
                     return (
                       <div className="space-y-2 text-xs">
-                        <div className="flex justify-between"><span className="text-slate-600">Name</span><strong>{client.name}</strong></div>
-                        <div className="flex justify-between"><span className="text-slate-600">Mobile</span><strong>{client.phone}</strong></div>
-                        <div className="flex justify-between"><span className="text-slate-600">Email</span><strong>{client.email}</strong></div>
+                        <div className="flex justify-between"><span className="text-slate-600">{copy.name}</span><strong>{client.name}</strong></div>
+                        <div className="flex justify-between"><span className="text-slate-600">{copy.mobile}</span><strong>{client.phone}</strong></div>
+                        <div className="flex justify-between"><span className="text-slate-600">{copy.email}</span><strong>{client.email}</strong></div>
                         <button
                           onClick={() => {
-                            const phone = prompt('Update mobile number', client.phone);
-                            const email = prompt('Update email', client.email);
+                            const phone = prompt(copy.updateMobile, client.phone);
+                            const email = prompt(copy.updateEmail, client.email);
                             if (phone && email) store.updateClient(client.id, { phone, email });
                           }}
                           className="bg-white border border-hairline px-3 py-2 rounded-xl font-bold hover:border-warm-turmeric"
                         >
-                          Edit Profile
+                          {copy.editProfile}
                         </button>
                       </div>
                     );
                   })()}
                 </div>
                 <div className="bg-paper border border-hairline rounded-2xl p-4 space-y-3">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Payment History</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.paymentHistory}</h4>
                   <div className="space-y-2 text-xs">
                     {state.bookings.filter(b => b.clientId === (state.loggedInUserId || 'client-1')).map(b => (
                       <div key={`pay-${b.id}`} className="flex justify-between bg-white border border-hairline rounded-xl p-2">
@@ -242,12 +484,12 @@ export default function RoleDashboardSection({
                   <table className="w-full text-xs text-left text-slate-750">
                     <thead className="text-[10px] text-ink-navy uppercase bg-paper border-b border-hairline">
                       <tr>
-                        <th className="px-4 py-3 border-b border-hairline">Booking ID</th>
-                        <th className="px-4 py-3 border-b border-hairline">Doctor</th>
-                        <th className="px-4 py-3 border-b border-hairline">Scheduled Date</th>
-                        <th className="px-4 py-3 border-b border-hairline">Amount</th>
-                        <th className="px-4 py-3 border-b border-hairline">Status</th>
-                        <th className="px-4 py-3 border-b border-hairline text-right">Actions</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.bookingId}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.doctor}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.scheduledDate}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.amount}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.status}</th>
+                        <th className="px-4 py-3 border-b border-hairline text-right">{copy.actions}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hairline bg-white">
@@ -282,17 +524,17 @@ export default function RoleDashboardSection({
                               <button
                                 onClick={() => {
                                   store.sendAppointmentReminder(booking.id);
-                                  alert('Appointment reminder SMS queued in sandbox log.');
+                                  alert(copy.reminderQueued);
                                 }}
                                 className="text-amber-800 hover:underline text-[10px] font-bold block sm:inline mt-1 sm:mt-0"
                               >
-                                Send Reminder
+                                {t.smsReminder}
                               </button>
                             )}
                             
                             {booking.status === 'completed' && booking.clinicalNotes && (
                               <div className="bg-paper p-3 rounded-lg text-left mt-2 text-[11px] text-slate-700 border border-hairline leading-normal">
-                                <strong>Diagnosis & Prescriptions:</strong> {booking.clinicalNotes}
+                                <strong>{copy.diagnosisPrescriptions}:</strong> {booking.clinicalNotes}
                               </div>
                             )}
 
@@ -304,7 +546,7 @@ export default function RoleDashboardSection({
                                 }}
                                 className="text-red-600 hover:text-red-700 hover:underline text-[10px] font-bold block sm:inline mt-1 sm:mt-0"
                               >
-                                File Complaint
+                                {t.submitComplaint}
                               </button>
                             )}
                           </td>
@@ -326,16 +568,16 @@ export default function RoleDashboardSection({
                 <div>
                   <h3 className="text-xl font-bold text-ink-navy tracking-tight font-display">{t.myDashboard}</h3>
                   <p className="text-slate-600 text-xs">
-                    Specialist: <strong className="text-ink-navy">{state.psychiatrists.find(d => d.id === state.loggedInUserId)?.name || "Dr. Ruwan Fernando"}</strong>
+                    {copy.specialist}: <strong className="text-ink-navy">{state.psychiatrists.find(d => d.id === state.loggedInUserId)?.name || "Dr. Ruwan Fernando"}</strong>
                   </p>
                 </div>
                 
                 {/* Boosting Package Option */}
                 <button
                   onClick={() => {
-                    if (confirm(`Boost profile to home page carousel for LKR ${state.config.boostPackageLkr}? (Simulated Package Transaction)`)) {
+                    if (confirm(`${copy.boostConfirm} for LKR ${state.config.boostPackageLkr}? (${copy.simulatedPackage})`)) {
                       store.purchaseBoost(state.loggedInUserId || 'psy-1');
-                      alert("Boost package activated! Your profile now displays in the prominent Homepage Carousel.");
+                      alert(copy.boostActivated);
                     }
                   }}
                   className="mt-3 sm:mt-0 bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 w-fit shadow-xs cursor-pointer transition-all"
@@ -351,15 +593,15 @@ export default function RoleDashboardSection({
                 return (
                   <div className="bg-paper border border-hairline rounded-2xl p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
                     <div className="lg:col-span-2 space-y-2">
-                      <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Profile & SLMC Document</h4>
+                      <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.profileSlmc}</h4>
                       <p className="text-slate-700 leading-relaxed">{doctor.bio}</p>
-                      <p className="text-[10px] text-slate-500">Registry proof: <strong>{doctor.slmcDocumentName || 'Verified from seed registry record'}</strong></p>
+                      <p className="text-[10px] text-slate-500">{copy.registryProof}: <strong>{doctor.slmcDocumentName || copy.verifiedSeed}</strong></p>
                     </div>
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => {
-                          const fee = prompt('Update consultation fee', String(doctor.fee));
-                          const bio = prompt('Update profile bio', doctor.bio);
+                          const fee = prompt(copy.updateFee, String(doctor.fee));
+                          const bio = prompt(copy.updateBio, doctor.bio);
                           if (fee && bio) store.updateDoctorProfile(doctor.id, { fee: parseInt(fee), bio });
                         }}
                         className="bg-white border border-hairline px-3 py-2 rounded-xl font-bold hover:border-warm-turmeric"
@@ -370,7 +612,7 @@ export default function RoleDashboardSection({
                         onClick={() => {
                           if (confirm(t.deactivateHoldWarning)) {
                             store.deactivateDoctor(doctor.id);
-                            alert('Doctor account enters the 7-calendar-day hold queue.');
+                            alert(copy.doctorHoldQueued);
                           }
                         }}
                         className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-xl font-bold hover:bg-red-100"
@@ -402,7 +644,7 @@ export default function RoleDashboardSection({
                       className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-1 cursor-pointer transition-all"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>Add</span>
+                      <span>{copy.add}</span>
                     </button>
                   </form>
                 </div>
@@ -412,11 +654,11 @@ export default function RoleDashboardSection({
                   <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{t.earningsTitle}</h4>
                   
                   <div className="flex justify-between items-center text-xs text-slate-600">
-                    <span>Platform Commission Band:</span>
+                    <span>{copy.platformCommissionBand}:</span>
                     <span className="font-bold text-ink-navy">{state.config.commissionRate}%</span>
                   </div>
                   <div className="flex justify-between items-center text-xs text-slate-600 border-t border-hairline pt-2">
-                    <span>Total Consultations:</span>
+                    <span>{copy.totalConsultations}:</span>
                     <span className="font-bold text-ink-navy">
                       {state.bookings.filter(b => b.psychiatristId === (state.loggedInUserId || 'psy-1') && b.status === 'completed').length}
                     </span>
@@ -442,12 +684,12 @@ export default function RoleDashboardSection({
                   <table className="w-full text-xs text-left text-slate-750">
                     <thead className="text-[10px] text-ink-navy uppercase bg-paper border-b border-hairline">
                       <tr>
-                        <th className="px-4 py-3 border-b border-hairline">Booking ID</th>
-                        <th className="px-4 py-3 border-b border-hairline">Patient Name</th>
-                        <th className="px-4 py-3 border-b border-hairline">Patient NIC</th>
-                        <th className="px-4 py-3 border-b border-hairline">Scheduled Date</th>
-                        <th className="px-4 py-3 border-b border-hairline">Status</th>
-                        <th className="px-4 py-3 border-b border-hairline text-right">Actions</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.bookingId}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.patientName}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.patientNic}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.scheduledDate}</th>
+                        <th className="px-4 py-3 border-b border-hairline">{copy.status}</th>
+                        <th className="px-4 py-3 border-b border-hairline text-right">{copy.actions}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hairline bg-white">
@@ -476,19 +718,19 @@ export default function RoleDashboardSection({
                                   className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer transition-all"
                                 >
                                   <Video className="w-3 h-3" />
-                                  <span>Start Consultation</span>
+                                  <span>{copy.startConsultation}</span>
                                 </button>
                                 <button
                                   onClick={() => handleStartConsultation(booking)}
                                   className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-2.5 py-1.5 rounded-md font-bold text-[10px] cursor-pointer transition-all shadow-xs"
                                 >
-                                  File Session Report
+                                  {t.submitSessionReport}
                                 </button>
                               </div>
                             )}
 
                             {booking.status === 'completed' && (
-                              <span className="text-slate-500 italic text-[10px]">Report Filed & Approved</span>
+                              <span className="text-slate-500 italic text-[10px]">{copy.reportApproved}</span>
                             )}
                           </td>
                         </tr>
@@ -508,40 +750,40 @@ export default function RoleDashboardSection({
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-hairline pb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-ink-navy tracking-tight font-display">{t.roleAdmin} Panel</h3>
-                  <p className="text-slate-600 text-xs font-sans">Verify SLMC Licenses, moderate disputes, configure platform parameters.</p>
+                  <h3 className="text-xl font-bold text-ink-navy tracking-tight font-display">{t.roleAdmin}</h3>
+                  <p className="text-slate-600 text-xs font-sans">{copy.adminSub}</p>
                 </div>
                 <button
                   onClick={handleExportCSV}
                   className="mt-3 sm:mt-0 bg-paper hover:bg-slate-100 text-ink-navy px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 w-fit border border-hairline cursor-pointer transition-all font-sans shadow-xs"
                 >
                   <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
-                  <span>Export Booking Reports (CSV)</span>
+                  <span>{copy.exportCsv}</span>
                 </button>
               </div>
 
               {/* Telemetry Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-paper p-4 rounded-xl border border-hairline text-center shadow-xs">
-                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">Total Verified Psychiatrists</span>
+                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">{copy.totalVerified}</span>
                   <span className="text-xl font-extrabold text-ink-navy mt-1 block font-display">
                     {state.psychiatrists.filter(d => d.slmcVerified).length}
                   </span>
                 </div>
                 <div className="bg-paper p-4 rounded-xl border border-hairline text-center shadow-xs">
-                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">Pending Approval</span>
+                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">{copy.pendingApproval}</span>
                   <span className="text-xl font-extrabold text-amber-600 mt-1 block font-display">
                     {state.psychiatrists.filter(d => !d.slmcVerified).length}
                   </span>
                 </div>
                 <div className="bg-paper p-4 rounded-xl border border-hairline text-center shadow-xs">
-                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">Total Client Accounts</span>
+                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">{copy.totalClientAccounts}</span>
                   <span className="text-xl font-extrabold text-ink-navy mt-1 block font-display">
                     {state.clients.length}
                   </span>
                 </div>
                 <div className="bg-paper p-4 rounded-xl border border-hairline text-center shadow-xs">
-                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">Gross Facilitation Revenue</span>
+                  <span className="block text-[10px] text-slate-600 font-bold uppercase tracking-wider">{copy.grossRevenue}</span>
                   <span className="text-xl font-extrabold text-amber-800 mt-1 block font-mono font-bold">
                     LKR {state.bookings.filter(b => b.status === 'completed' || b.status === 'paid').reduce((acc, b) => acc + b.commission, 0)}
                   </span>
@@ -551,7 +793,7 @@ export default function RoleDashboardSection({
               {/* Client and Payment Operations */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Client Account Controls</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.clientControls}</h4>
                   <div className="space-y-3">
                     {state.clients.map(client => (
                       <div key={client.id} className="bg-paper border border-hairline rounded-xl p-3 flex items-center justify-between">
@@ -573,7 +815,7 @@ export default function RoleDashboardSection({
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Transactions & Refund Approval</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.transactionsRefund}</h4>
                   <div className="space-y-3">
                     {state.bookings.map(booking => (
                       <div key={`admin-pay-${booking.id}`} className="bg-paper border border-hairline rounded-xl p-3 flex items-center justify-between">
@@ -584,7 +826,7 @@ export default function RoleDashboardSection({
                         </div>
                         <button
                           onClick={() => {
-                            if (confirm(`Approve manual refund for booking #${booking.id}?`)) store.refundBooking(booking.id);
+                            if (confirm(`${copy.refundConfirm} #${booking.id}?`)) store.refundBooking(booking.id);
                           }}
                           disabled={booking.status === 'refunded'}
                           className="bg-white border border-hairline disabled:opacity-50 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:border-warm-turmeric"
@@ -599,7 +841,7 @@ export default function RoleDashboardSection({
 
               {/* 1. Approvals Management */}
               <div className="space-y-4">
-                <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Mandatory SLMC Registry Auditing</h4>
+                <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.slmcAudit}</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {state.psychiatrists.map(doc => (
@@ -629,7 +871,7 @@ export default function RoleDashboardSection({
                 <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{t.viewComplaints}</h4>
 
                 {state.complaints.length === 0 ? (
-                  <p className="text-slate-500 text-xs italic">No user grievances or incident reports logged.</p>
+                  <p className="text-slate-500 text-xs italic">{copy.noComplaints}</p>
                 ) : (
                   <div className="space-y-4">
                     {state.complaints.map(cmp => (
@@ -646,7 +888,7 @@ export default function RoleDashboardSection({
                           <div className="flex space-x-2">
                             <input 
                               type="text" 
-                              placeholder="Write resolution decision..."
+                              placeholder={copy.resolutionPlaceholder}
                               value={adminResolutionInput[cmp.id] || ''}
                               onChange={(e) => setAdminResolutionInput(prev => ({ ...prev, [cmp.id]: e.target.value }))}
                               className="border border-hairline bg-white text-ink-navy rounded-lg p-1.5 text-xs flex-1"
@@ -656,16 +898,16 @@ export default function RoleDashboardSection({
                                 const notes = adminResolutionInput[cmp.id];
                                 if (!notes) return;
                                 store.resolveComplaint(cmp.id, notes);
-                                alert("Complaint resolved manually and notifications sent!");
+                                alert(copy.complaintResolved);
                               }}
                               className="bg-warm-turmeric text-ink-navy px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:bg-warm-turmeric/90"
                             >
-                              Resolve
+                              {t.submitButton}
                             </button>
                           </div>
                         ) : (
                           <div className="bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-emerald-800 text-[11px] leading-normal font-medium">
-                            <strong>Resolved Decision:</strong> {cmp.resolutionDetails}
+                            <strong>{copy.resolvedDecision}:</strong> {cmp.resolutionDetails}
                           </div>
                         )}
                       </div>
@@ -683,8 +925,8 @@ export default function RoleDashboardSection({
               
               {/* Header */}
               <div className="border-b border-hairline pb-4">
-                <h3 className="text-xl font-bold text-ink-navy tracking-tight font-display">{t.roleSuperAdmin} Dashboard</h3>
-                <p className="text-slate-600 text-xs font-sans">Adjust global commission policies, manage administrative users, and analyze revenue margins.</p>
+                <h3 className="text-xl font-bold text-ink-navy tracking-tight font-display">{t.roleSuperAdmin}</h3>
+                <p className="text-slate-600 text-xs font-sans">{copy.superadminSub}</p>
               </div>
 
               {/* Multi-language Commission Rates Form */}
@@ -694,12 +936,12 @@ export default function RoleDashboardSection({
                 <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4">
                   <div className="space-y-1">
                     <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{t.setCommission}</h4>
-                    <p className="text-slate-500 text-[10px]">Commission values must remain strictly within the 15% - 20% bracket.</p>
+                    <p className="text-slate-500 text-[10px]">{copy.commissionNote}</p>
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold text-slate-600">
-                      <span>Rate:</span>
+                      <span>{copy.rate}:</span>
                       <span className="text-amber-800 font-mono text-sm font-bold">{commissionInput}%</span>
                     </div>
                     <input 
@@ -716,21 +958,21 @@ export default function RoleDashboardSection({
                   <button
                     onClick={() => {
                       store.updateConfig({ commissionRate: commissionInput });
-                      alert(`Platform commission successfully set to ${commissionInput}% on future bookings!`);
+                      alert(`${copy.commissionSet} ${commissionInput}% ${copy.futureBookings}`);
                     }}
                     className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-4 py-2.5 rounded-xl text-xs font-bold w-full transition-all cursor-pointer shadow-xs"
                   >
-                    Save Commission Rule
+                    {t.setCommission}
                   </button>
                 </div>
 
                 {/* Simulated payment Gateway and SMS Credentials */}
                 <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">SMS Gateway Configuration</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.smsConfig}</h4>
                   
                   <div className="space-y-3 text-xs">
                     <div className="space-y-1">
-                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">API Gateway Endpoint</span>
+                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">{copy.apiEndpoint}</span>
                       <input 
                         type="text" 
                         value={state.config.smsGatewayUrl} 
@@ -739,7 +981,7 @@ export default function RoleDashboardSection({
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">Gateway Mask / Sender ID</span>
+                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">{copy.senderId}</span>
                       <input 
                         type="text" 
                         value={state.config.smsSenderId} 
@@ -751,10 +993,10 @@ export default function RoleDashboardSection({
                 </div>
 
                 <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4">
-                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Boosting & Payment Settings</h4>
+                  <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.boostPaymentSettings}</h4>
                   <div className="space-y-3 text-xs">
                     <label className="block space-y-1">
-                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">Boost Package Price (LKR)</span>
+                      <span className="block text-slate-600 font-semibold text-[10px] uppercase">{copy.boostPrice}</span>
                       <input
                         type="number"
                         value={state.config.boostPackageLkr}
@@ -763,11 +1005,11 @@ export default function RoleDashboardSection({
                       />
                     </label>
                     <label className="flex items-center justify-between bg-white border border-hairline p-2 rounded-lg">
-                      <span className="font-semibold">LankaPay enabled</span>
+                      <span className="font-semibold">{copy.lankaPayEnabled}</span>
                       <input type="checkbox" checked={state.config.lankaPayEnabled} onChange={(e) => store.updateConfig({ lankaPayEnabled: e.target.checked })} />
                     </label>
                     <label className="flex items-center justify-between bg-white border border-hairline p-2 rounded-lg">
-                      <span className="font-semibold">Visa/Mastercard enabled</span>
+                      <span className="font-semibold">{copy.cardEnabled}</span>
                       <input type="checkbox" checked={state.config.cardPaymentEnabled} onChange={(e) => store.updateConfig({ cardPaymentEnabled: e.target.checked })} />
                     </label>
                   </div>
@@ -775,19 +1017,19 @@ export default function RoleDashboardSection({
 
                 <div className="bg-paper p-5 rounded-2xl border border-hairline shadow-xs space-y-4 md:col-span-2">
                   <div className="flex items-center justify-between gap-3">
-                    <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">Admin Accounts & Permissions</h4>
+                    <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider font-display">{copy.adminAccounts}</h4>
                     <button
                       onClick={() => {
-                        const name = prompt('Admin name');
-                        const role = prompt('Admin role', 'Support Officer');
-                        const permissions = prompt('Permissions comma separated', 'Complaint resolution,Refund approval');
+                        const name = prompt(copy.adminName);
+                        const role = prompt(copy.adminRole, 'Support Officer');
+                        const permissions = prompt(copy.permissionsPrompt, 'Complaint resolution,Refund approval');
                         if (name && role && permissions) {
                           store.addAdminAccount(name, role, permissions.split(',').map(p => p.trim()).filter(Boolean));
                         }
                       }}
                       className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-3 py-2 rounded-xl text-xs font-bold"
                     >
-                      Create Admin
+                      {t.roleAdmin}
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
