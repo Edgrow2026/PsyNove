@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Dispatch, FormEvent, SetStateAction } from 'react';
-import { Booking } from '@/lib/store';
-import { Language, TranslationSet } from '@/lib/translations';
-import { uiCopy } from '@/lib/ui-copy';
+import { Dispatch, SetStateAction } from "react";
+import { Booking } from "@/lib/store";
+import { Language, TranslationSet } from "@/lib/translations";
+import { uiCopy } from "@/lib/ui-copy";
 
 interface ComplaintModalProps {
   booking: Booking;
@@ -13,7 +13,9 @@ interface ComplaintModalProps {
   lang: Language;
   setComplaintNotes: Dispatch<SetStateAction<string>>;
   onClose: () => void;
-  onSubmit: (event: FormEvent) => void;
+  onSubmit: (
+    event: React.SyntheticEvent<HTMLFormElement>,
+  ) => void | Promise<void>;
 }
 
 export default function ComplaintModal({
@@ -29,14 +31,24 @@ export default function ComplaintModal({
   const copy = uiCopy[lang];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" id="complaint-modal">
+    <div
+      className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in"
+      id="complaint-modal"
+    >
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-hairline text-xs overflow-hidden text-slate-700 font-sans">
         <div className="bg-red-50 text-red-750 p-5 flex items-center justify-between border-b border-red-200">
           <div className="space-y-0.5">
-            <h3 className="font-bold text-sm tracking-tight text-red-750 font-display">{t.submitComplaint}</h3>
-            <p className="text-red-600 text-[10px] font-sans">{copy.complaintReviewText}</p>
+            <h3 className="font-bold text-sm tracking-tight text-red-750 font-display">
+              {t.submitComplaint}
+            </h3>
+            <p className="text-red-600 text-[10px] font-sans">
+              {copy.complaintReviewText}
+            </p>
           </div>
-          <button onClick={onClose} className="text-red-600 hover:text-red-800 cursor-pointer transition-colors">
+          <button
+            onClick={onClose}
+            className="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
+          >
             {copy.close}
           </button>
         </div>
@@ -49,14 +61,18 @@ export default function ComplaintModal({
           )}
 
           <div className="space-y-1">
-            <label className="font-bold text-slate-600 font-sans">{copy.bookingAssociated}:</label>
+            <label className="font-bold text-slate-600 font-sans">
+              {copy.bookingAssociated}:
+            </label>
             <span className="block font-semibold text-ink-navy font-sans">
               {copy.appointmentWith} #{booking.id}: {booking.psychiatristName}
             </span>
           </div>
 
           <div className="space-y-1 font-sans">
-            <label className="font-bold text-slate-700">{t.complaintNotes}</label>
+            <label className="font-bold text-slate-700">
+              {t.complaintNotes}
+            </label>
             <textarea
               required
               rows={4}

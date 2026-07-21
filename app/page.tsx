@@ -1,6 +1,6 @@
 "use client";
 
-import supabase from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
@@ -119,18 +119,54 @@ export default function HomePage() {
     async function fetchPsychiatrists() {
       const { data, error } = await supabase
         .from("psychiatrist_profiles")
-        .select("*")
+        .select(
+          `
+        user_id,
+        slmc_number,
+        qualifications,
+        bio,
+        specializations,
+        consultation_languages,
+        consultation_fee,
+        verification_status,
+        is_boosted,
+        boost_expires_at,
+        profiles (
+          full_name,
+          district,
+          avatar_url
+        )
+      `,
+        )
+        .select(
+          `
+        user_id,
+        slmc_number,
+        qualifications,
+        bio,
+        specializations,
+        consultation_languages,
+        consultation_fee,
+        verification_status,
+        is_boosted,
+        boost_expires_at,
+        profiles (
+          full_name,
+          district,
+          avatar_url
+        )
+      `,
+        )
         .eq("verification_status", "verified");
 
       if (error) {
-        console.warn(
-          "Unable to fetch psychiatrist profiles; using local seed data.",
-          error.message,
-        );
+        console.error("Error fetching psychiatrists:", error);
+        console.error("Error fetching psychiatrists:", error);
         return;
       }
 
-      console.info("Fetched psychiatrist profiles:", data?.length ?? 0);
+      console.log("Psychiatrists:", data);
+      console.log("Psychiatrists:", data);
     }
 
     fetchPsychiatrists();
@@ -261,9 +297,10 @@ export default function HomePage() {
     }
   };
 
-  const handleClientRegisterSubmit = async (e: React.FormEvent) => {
+  const handleClientRegisterSubmit = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
-
     if (!regName || !regNIC || !regPhone || !regEmail || !regPassword) {
       alert("Please complete all required fields.");
       return;
@@ -465,8 +502,11 @@ export default function HomePage() {
   };
 
   // Doctor Action
-  const handleAddAvailabilitySlot = (e: React.FormEvent) => {
+  const handleAddAvailabilitySlot = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
+
     if (!newSlotDateTime || !state.loggedInUserId) return;
     store.addSlot(state.loggedInUserId, newSlotDateTime);
     setNewSlotDateTime("");
@@ -480,11 +520,13 @@ export default function HomePage() {
     setSessionSuccessMsg(false);
   };
 
-  const handleCloseSessionWithReport = (e: React.FormEvent) => {
+  const handleCloseSessionWithReport = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
     if (!activeSessionRoom) return;
 
-    store.completeBooking(activeSessionRoom.id, sessionReportNotes);
+    await store.completeBooking(activeSessionRoom.id, sessionReportNotes);
     setSessionSuccessMsg(true);
 
     setTimeout(() => {
@@ -494,8 +536,11 @@ export default function HomePage() {
   };
 
   // Complaint Submission
-  const handleFileComplaintSubmit = (e: React.FormEvent) => {
+  const handleFileComplaintSubmit = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
+
     if (!activeComplaintBooking || !complaintNotes) return;
 
     store.submitComplaint({
@@ -522,8 +567,11 @@ export default function HomePage() {
   };
 
   // Doctor Registration
-  const handleDoctorRegisterSubmit = (e: React.FormEvent) => {
+  const handleDoctorRegisterSubmit = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
+
     if (!docName || !docSLMC || !docQualifications || !docBio) return;
 
     store.registerDoctor({
