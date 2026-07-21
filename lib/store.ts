@@ -75,6 +75,7 @@ export interface SystemConfig {
 
 export interface AppState {
   currentLanguage: Language;
+  languagePreferenceSet?: boolean;
   currentRole: 'guest' | 'client' | 'psychiatrist' | 'admin' | 'superadmin';
   loggedInUserId: string | null;
   psychiatrists: Psychiatrist[];
@@ -252,6 +253,7 @@ const INITIAL_COMPLAINTS: Complaint[] = [
 
 const DEFAULT_STATE: AppState = {
   currentLanguage: 'si',
+  languagePreferenceSet: false,
   currentRole: 'guest',
   loggedInUserId: null,
   psychiatrists: INITIAL_PSYCHIATRISTS,
@@ -292,21 +294,16 @@ class StateStore {
     if (stored) {
       try {
         this.state = JSON.parse(stored);
+        if (!this.state.languagePreferenceSet) {
+          this.state.currentLanguage = 'si';
+          this.save();
+        }
       } catch (e) {
         console.error("Failed to parse store, resetting", e);
         this.state = { ...DEFAULT_STATE };
         localStorage.setItem('psynova_store', JSON.stringify(this.state));
       }
     } else {
-      const browserLang = navigator.language.toLowerCase();
-      this.state = {
-        ...this.state,
-        currentLanguage: browserLang.startsWith('ta')
-          ? 'ta'
-          : browserLang.startsWith('en')
-            ? 'en'
-            : 'si',
-      };
       localStorage.setItem('psynova_store', JSON.stringify(this.state));
     }
 
@@ -338,6 +335,7 @@ class StateStore {
 
   public setLanguage(lang: Language) {
     this.state.currentLanguage = lang;
+    this.state.languagePreferenceSet = true;
     this.save();
   }
 
