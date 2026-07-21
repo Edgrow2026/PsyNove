@@ -119,33 +119,15 @@ export default function HomePage() {
     async function fetchPsychiatrists() {
       const { data, error } = await supabase
         .from("psychiatrist_profiles")
-        .select(
-          `
-        user_id,
-        slmc_number,
-        qualifications,
-        bio,
-        specializations,
-        consultation_languages,
-        consultation_fee,
-        verification_status,
-        is_boosted,
-        boost_expires_at,
-        profiles (
-          full_name,
-          district,
-          avatar_url
-        )
-      `,
-        )
+        .select("*")
         .eq("verification_status", "verified");
 
       if (error) {
-        console.error("Error fetching psychiatrists:", error);
+        console.warn("Unable to fetch psychiatrist profiles; using local seed data.", error.message);
         return;
       }
 
-      console.log("Psychiatrists:", data);
+      console.info("Fetched psychiatrist profiles:", data?.length ?? 0);
     }
 
     fetchPsychiatrists();
@@ -276,7 +258,7 @@ export default function HomePage() {
     }
   };
 
-  const handleClientRegisterSubmit = (e: React.FormEvent) => {
+  const handleClientRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!regName || !regNIC || !regPhone || !regEmail || !regPassword) {
