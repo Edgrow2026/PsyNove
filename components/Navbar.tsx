@@ -5,8 +5,20 @@ import Link from 'next/link';
 import { store, AppState } from '../lib/store';
 import { translations, Language } from '../lib/translations';
 import { uiCopy } from '../lib/ui-copy';
-import { Menu, X, BrainCircuit, User, LogOut, ChevronDown, Award, ShieldAlert, HeartHandshake } from 'lucide-react';
+import { Menu, X, BrainCircuit, User, LogOut, ChevronDown, HeartHandshake } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
+import AuthTabs from './auth/AuthTabs';
+import { ClientRegisterValues } from './auth/ClientRegisterModal';
+import { LoginRole } from './auth/LoginModal';
+import { PsychiatristRegisterValues } from './auth/PsychiatristRegisterModal';
+import {
+  getProfile,
+  registerClient,
+  registerPsychiatrist,
+  signInWithRole,
+  signOut,
+} from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 interface NavbarProps {
   activeSection?: string;
@@ -17,8 +29,6 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [loginPhone, setLoginPhone] = useState('+94771234567');
-  const [loginPassword, setLoginPassword] = useState('123456');
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
@@ -26,6 +36,45 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
       setState({ ...store.getState() });
     });
     return unsub;
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      const user = data.session?.user;
+      if (!user || !isMounted) return;
+
+      try {
+        const profile = await getProfile(user.id);
+        store.syncAuthenticatedProfile(profile);
+      } catch (error) {
+        console.warn('Unable to restore auth session.', error);
+      }
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      if (event === 'SIGNED_OUT') {
+        store.setRole('guest', null);
+        return;
+      }
+
+      if (!session?.user) return;
+
+      try {
+        const profile = await getProfile(session.user.id);
+        store.syncAuthenticatedProfile(profile);
+      } catch (error) {
+        console.warn('Unable to sync auth session.', error);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const t = translations[state.currentLanguage];
@@ -36,21 +85,65 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
     store.setLanguage(newLang);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn('Supabase logout failed, clearing local session.', error);
+    }
     store.setRole('guest', null);
     setUserDropdownOpen(false);
     window.location.href = '/';
   };
 
-  const handleClientLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const ok = store.loginClient(loginPhone.trim(), loginPassword);
-    if (!ok) {
-      setLoginError(copy.invalidLogin);
-      return;
+  const handleClientLogin = async (phone: string, password: string) => {
+    try {
+      const result = await signInWithRole('client', phone, password);
+      store.syncAuthenticatedProfile(result.profile);
+      setLoginError('');
+      setLoginOpen(false);
+      return true;
+    } catch (error) {
+      const fallbackOk = store.loginClient(phone, password);
+      if (fallbackOk) {
+        setLoginError('');
+        setLoginOpen(false);
+        return true;
+      }
+
+      setLoginError(error instanceof Error ? error.message : copy.invalidLogin);
+      return false;
     }
+  };
+
+  const handleRoleLogin = async (
+    role: Exclude<LoginRole, 'client'>,
+    identifier: string,
+    password: string,
+  ) => {
+    try {
+      const result = await signInWithRole(role, identifier, password);
+      store.syncAuthenticatedProfile(result.profile);
+      setLoginError(result.warning || '');
+      setLoginOpen(false);
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Login failed.');
+      throw error;
+    }
+  };
+
+  const handleClientRegister = async (values: ClientRegisterValues) => {
+    const result = await registerClient(values);
+    store.syncAuthenticatedProfile(result.profile);
     setLoginError('');
-    setLoginOpen(false);
+    return result.warning || 'Patient account created and connected to Supabase.';
+  };
+
+  const handlePsychiatristRegister = async (values: PsychiatristRegisterValues) => {
+    const result = await registerPsychiatrist(values);
+    store.syncAuthenticatedProfile(result.profile);
+    setLoginError('');
+    return result.warning || 'Doctor account submitted and connected to Supabase.';
   };
 
   const goToHomeSection = (sectionId: string) => {
@@ -287,44 +380,20 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
         </div>
       )}
       {loginOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
-          <form onSubmit={handleClientLogin} className="bg-white rounded-2xl border border-hairline shadow-2xl max-w-sm w-full p-5 space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-hairline pb-3">
-              <div>
-                <h3 className="font-bold text-ink-navy text-base font-display">{t.login}</h3>
-                <p className="text-slate-600 text-[11px]">{copy.clientLoginHint}</p>
-              </div>
-              <button type="button" onClick={() => setLoginOpen(false)} className="text-slate-500 hover:text-ink-navy font-bold">
-                {copy.close}
-              </button>
-            </div>
-            {loginError && (
-              <div className="bg-red-50 text-red-700 border border-red-200 p-2.5 rounded-xl font-semibold">
-                {loginError}
-              </div>
-            )}
-            <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.mobileNumber}</label>
-              <input
-                value={loginPhone}
-                onChange={(e) => setLoginPhone(e.target.value)}
-                className="w-full bg-paper border border-hairline rounded-xl p-2.5 text-ink-navy focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-bold text-slate-700">{copy.password}</label>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full bg-paper border border-hairline rounded-xl p-2.5 text-ink-navy focus:ring-1 focus:ring-warm-turmeric focus:outline-hidden"
-              />
-            </div>
-            <button type="submit" className="w-full bg-warm-turmeric text-ink-navy py-2.5 rounded-xl font-bold hover:bg-warm-turmeric/90">
-              {t.login}
-            </button>
-          </form>
-        </div>
+        <AuthTabs
+          lang={lang}
+          t={t}
+          districtList={Object.keys(translations.en.districts)}
+          loginError={loginError}
+          onClose={() => {
+            setLoginError('');
+            setLoginOpen(false);
+          }}
+          onClientLogin={handleClientLogin}
+          onRoleLogin={handleRoleLogin}
+          onClientRegister={handleClientRegister}
+          onPsychiatristRegister={handlePsychiatristRegister}
+        />
       )}
     </header>
   );

@@ -40,6 +40,7 @@ self.addEventListener('fetch', (event) => {
   // CRITICAL SECURITY CONSTRAINT: Never cache authenticated areas or sensitive state
   if (
     url.pathname.startsWith('/api/') || 
+    url.pathname.startsWith('/_next/') ||
     url.pathname.includes('dashboard') || 
     url.pathname.includes('admin') || 
     event.request.method !== 'GET'
