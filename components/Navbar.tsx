@@ -112,7 +112,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
       }
 
       setLoginError(error instanceof Error ? error.message : copy.invalidLogin);
-      return false;
+      throw error;
     }
   };
 
@@ -172,6 +172,15 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
   };
 
   const badge = getRoleBadge();
+  const accountName =
+    state.currentRole === 'client'
+      ? state.clients.find(c => c.id === state.loggedInUserId)?.name || 'PsyNova Client'
+      : state.currentRole === 'psychiatrist'
+        ? state.psychiatrists.find(d => d.id === state.loggedInUserId)?.name || 'PsyNova Psychiatrist'
+        : state.currentRole === 'admin' || state.currentRole === 'superadmin'
+          ? state.config.adminAccounts.find(admin => admin.id === state.loggedInUserId)?.name ||
+            (state.currentRole === 'superadmin' ? 'PsyNova Super Admin' : 'PsyNova Admin')
+          : '';
 
   return (
     <header className="sticky top-0 z-40 w-full bg-paper/95 backdrop-blur-md border-b border-hairline shadow-md shadow-ink-navy/5" id="psynova-header">
@@ -254,16 +263,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
                 <div className="w-5 h-5 rounded-full bg-warm-turmeric/15 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-warm-turmeric" />
                 </div>
-                <span>
-                  {state.currentRole === 'client' 
-                    ? state.clients.find(c => c.id === state.loggedInUserId)?.name || "Kavindu"
-                    : state.currentRole === 'psychiatrist'
-                      ? state.psychiatrists.find(d => d.id === state.loggedInUserId)?.name || "Dr. Ruwan"
-                      : state.currentRole === 'admin'
-                        ? "Platform Admin"
-                        : "Super Admin"
-                  }
-                </span>
+                <span>{accountName}</span>
                 <ChevronDown className="w-3 h-3 text-ink-navy/60" />
               </button>
 
@@ -355,7 +355,7 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
                     <User className="w-3.5 h-3.5 text-warm-turmeric" />
                   </div>
                   <span className="text-xs font-semibold text-ink-navy">
-                    {state.currentRole === 'client' ? "Kavindu" : "Dr. Ruwan"}
+                    {accountName}
                   </span>
                 </div>
                 <div className="flex space-x-2">

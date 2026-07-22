@@ -286,6 +286,23 @@ class StateStore {
   private listeners: (() => void)[] = [];
   private hydrated = false;
 
+  private normalizeState(state: Partial<AppState>): AppState {
+    return {
+      ...DEFAULT_STATE,
+      ...state,
+      psychiatrists: state.psychiatrists || DEFAULT_STATE.psychiatrists,
+      clients: state.clients || DEFAULT_STATE.clients,
+      bookings: state.bookings || DEFAULT_STATE.bookings,
+      complaints: state.complaints || DEFAULT_STATE.complaints,
+      smsInbox: state.smsInbox || DEFAULT_STATE.smsInbox,
+      config: {
+        ...DEFAULT_STATE.config,
+        ...(state.config || {}),
+        adminAccounts: state.config?.adminAccounts || DEFAULT_STATE.config.adminAccounts,
+      },
+    };
+  }
+
   private hydrateFromBrowser() {
     if (this.hydrated || typeof window === 'undefined') return;
     this.hydrated = true;
@@ -293,13 +310,13 @@ class StateStore {
     const stored = localStorage.getItem('psynova_store');
     if (stored) {
       try {
-        this.state = JSON.parse(stored);
+        this.state = this.normalizeState(JSON.parse(stored));
         if (!this.state.languagePreferenceSet) {
           this.state.currentLanguage = 'si';
-          this.save();
         }
+        this.save();
       } catch (e) {
-        console.error("Failed to parse store, resetting", e);
+        console.warn("Failed to parse store, resetting", e);
         this.state = { ...DEFAULT_STATE };
         localStorage.setItem('psynova_store', JSON.stringify(this.state));
       }
@@ -340,7 +357,12 @@ class StateStore {
   }
 
   public loginClient(phone: string, password: string): boolean {
-    const client = this.state.clients.find(c => c.phone === phone && c.password === password && !c.suspended);
+    const identifier = phone.trim().toLowerCase();
+    const client = this.state.clients.find(c =>
+      (c.phone === phone || c.email.toLowerCase() === identifier) &&
+      c.password === password &&
+      !c.suspended
+    );
     if (!client) return false;
     this.setRole('client', client.id);
     return true;
@@ -359,17 +381,26 @@ class StateStore {
     phone: string | null;
     email: string | null;
     district: string | null;
+    nic?: string | null;
+    languages?: string[] | null;
+    bio?: string | null;
+    fee?: number | null;
+    slmcNumber?: string | null;
+    qualifications?: string | null;
+    specializations?: string[] | null;
+    slmcDocumentName?: string | null;
+    verificationStatus?: string | null;
   }) {
     if (profile.role === 'client') {
       const existing = this.state.clients.find(c => c.id === profile.id);
       const clientProfile: ClientProfile = {
         id: profile.id,
         name: profile.full_name || 'PsyNova Client',
-        nic: existing?.nic || '',
+        nic: profile.nic || existing?.nic || '',
         phone: profile.phone || '',
         email: profile.email || '',
         district: profile.district || 'Colombo',
-        languages: existing?.languages || ['Sinhala'],
+        languages: profile.languages || existing?.languages || ['Sinhala'],
         password: existing?.password,
         suspended: existing?.suspended,
         deactivatedAt: existing?.deactivatedAt,
@@ -386,24 +417,41 @@ class StateStore {
         id: profile.id,
         name: profile.full_name || 'PsyNova Psychiatrist',
         photo: existing?.photo || `https://picsum.photos/seed/${profile.id}/300/300`,
-        qualifications: existing?.qualifications || 'Pending qualifications review',
-        specializations: existing?.specializations || ['General Psychiatry'],
-        languages: existing?.languages || ['Sinhala'],
+        qualifications: profile.qualifications || existing?.qualifications || 'Pending qualifications review',
+        specializations: profile.specializations || existing?.specializations || ['General Psychiatry'],
+        languages: (profile.languages as Psychiatrist['languages'] | null) || existing?.languages || ['Sinhala'],
         district: profile.district || 'Colombo',
-        fee: existing?.fee || 3500,
-        slmcNumber: existing?.slmcNumber || 'Pending SLMC',
-        slmcVerified: existing?.slmcVerified || false,
+        fee: profile.fee || existing?.fee || 3500,
+        slmcNumber: profile.slmcNumber || existing?.slmcNumber || 'Pending SLMC',
+        slmcVerified: profile.verificationStatus ? profile.verificationStatus === 'verified' : existing?.slmcVerified || false,
         isBoosted: existing?.isBoosted || false,
         boostExpiresAt: existing?.boostExpiresAt,
         availableSlots: existing?.availableSlots || [],
-        bio: existing?.bio || 'Profile pending admin verification.',
-        slmcDocumentName: existing?.slmcDocumentName,
+        bio: profile.bio || existing?.bio || 'Profile pending admin verification.',
+        slmcDocumentName: profile.slmcDocumentName || existing?.slmcDocumentName,
         deactivatedAt: existing?.deactivatedAt,
       };
 
       this.state.psychiatrists = existing
         ? this.state.psychiatrists.map(doctor => doctor.id === profile.id ? doctorProfile : doctor)
         : [doctorProfile, ...this.state.psychiatrists];
+    }
+
+    if (profile.role === 'admin' || profile.role === 'superadmin') {
+      const existing = this.state.config.adminAccounts.find(admin => admin.id === profile.id);
+      const adminProfile = {
+        id: profile.id,
+        name: profile.full_name || (profile.role === 'superadmin' ? 'PsyNova Super Admin' : 'PsyNova Admin'),
+        role: profile.role === 'superadmin' ? 'Super Admin' : 'Admin',
+        permissions:
+          profile.role === 'superadmin'
+            ? ['Commission policy', 'Admin management', 'Revenue analytics']
+            : ['SLMC verification', 'Refund approval', 'Complaint resolution'],
+      };
+
+      this.state.config.adminAccounts = existing
+        ? this.state.config.adminAccounts.map(admin => admin.id === profile.id ? adminProfile : admin)
+        : [adminProfile, ...this.state.config.adminAccounts];
     }
 
     this.state.currentRole = profile.role;

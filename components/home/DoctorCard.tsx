@@ -29,8 +29,9 @@ export default function DoctorCard({ doctor, featured = false, t, lang, formatTi
           <Image
             src={doctor.photo}
             alt={doctor.name}
-            fill
-            className="object-cover"
+            width={96}
+            height={96}
+            className="h-full w-full object-cover"
             referrerPolicy="no-referrer"
           />
         </div>

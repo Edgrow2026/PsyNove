@@ -1,5 +1,4 @@
 'use client';
-
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { Language, TranslationSet } from '@/lib/translations';
@@ -92,12 +91,13 @@ export default function HeroSection({ t, lang }: HeroSectionProps) {
           </div>
 
           <div className="lg:col-span-5 relative mt-6 lg:mt-0">
-            <div className="aspect-4/3 w-full bg-white rounded-3xl overflow-hidden border border-hairline shadow-xl relative">
+            <div className="aspect-[4/3] w-full bg-white rounded-3xl overflow-hidden border border-hairline shadow-xl relative">
               <Image
                 src="https://images.unsplash.com/photo-1527689368864-3a821dbccc34?auto=format&fit=crop&q=80&w=800"
                 alt="Psychotherapy Session"
-                fill
-                className="object-cover opacity-85 select-none"
+                width={800}
+                height={600}
+                className="h-full w-full object-cover opacity-85 select-none"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
@@ -108,8 +108,9 @@ export default function HeroSection({ t, lang }: HeroSectionProps) {
                 <Image
                   src="https://picsum.photos/seed/doctor-ruwan/100/100"
                   alt="Dr. Ruwan"
-                  fill
-                  className="object-cover"
+                  width={100}
+                  height={100}
+                  className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -135,8 +136,9 @@ export default function HeroSection({ t, lang }: HeroSectionProps) {
                     <Image
                       src={`https://picsum.photos/seed/patient-avatar-${id}/60/60`}
                       alt="User Avatar"
-                      fill
-                      className="object-cover"
+                      width={60}
+                      height={60}
+                      className="h-full w-full object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </div>

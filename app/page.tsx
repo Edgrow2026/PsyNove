@@ -120,68 +120,34 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const fetchPsychiatrists = async () => {
-      const { data, error } = await supabase
-        .from("psychiatrist_profiles")
-        .select(
-          `
+  async function fetchPsychiatrists() {
+    const { data, error } = await supabase
+      .from("psychiatrist_profiles")
+      .select(
+        `
         user_id,
-        slmc_number,
-        qualifications,
         bio,
-        specializations,
-        consultation_languages,
         consultation_fee,
         verification_status,
-        is_boosted,
-        boost_expires_at,
         profiles (
           full_name,
           district,
           avatar_url
         )
       `,
-        )
-        .eq("verification_status", "verified");
+      )
+      .eq("verification_status", "verified");
 
-      if (error) {
-        console.log("Supabase error message:", error.message);
-        console.log("Supabase error code:", error.code);
-        console.log("Supabase error details:", error.details);
-        console.log("Supabase error hint:", error.hint);
-        return;
-      }
+    if (error) {
+      console.warn("Unable to fetch Supabase psychiatrist profiles:", error);
+      return;
+    }
 
-      const formattedPsychiatrists: Psychiatrist[] = (data ?? []).map(
-        (item) => {
-          const profile = Array.isArray(item.profiles)
-            ? item.profiles[0]
-            : item.profiles;
+    console.info("Supabase psychiatrist profiles:", data);
+  }
 
-          return {
-            id: item.user_id,
-            name: profile?.full_name ?? "Unknown psychiatrist",
-            photo: profile?.avatar_url ?? "/images/default-avatar.png",
-            district: profile?.district ?? "",
-            languages: item.consultation_languages ?? [],
-            specializations: item.specializations ?? [],
-            qualifications: item.qualifications ?? [],
-            bio: item.bio ?? "",
-            fee: item.consultation_fee ?? 0,
-            slmcNumber: item.slmc_number ?? "",
-            slmcVerified: item.verification_status === "verified",
-            isBoosted: item.is_boosted ?? false,
-            boostExpiresAt: item.boost_expires_at ?? undefined,
-            availableSlots: [],
-          };
-        },
-      );
-
-      setPsychiatrists(formattedPsychiatrists);
-    };
-
-    fetchPsychiatrists();
-  }, []);
+  fetchPsychiatrists();
+}, []);
 
   const t = translations[state.currentLanguage];
   const lang = state.currentLanguage;
