@@ -1,4 +1,4 @@
-const CACHE_NAME = 'psynova-v2';
+const CACHE_NAME = 'psynova-v3';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
@@ -37,6 +37,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  if (event.request.destination === 'image') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Navigations must always return an HTML document, never a stale cached asset.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(OFFLINE_URL))
+    );
+    return;
+  }
+
   // CRITICAL SECURITY CONSTRAINT: Never cache authenticated areas or sensitive state
   if (
     url.pathname.startsWith('/api/') || 
@@ -46,15 +59,6 @@ self.addEventListener('fetch', (event) => {
     event.request.method !== 'GET'
   ) {
     event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // For app pages, use network-first so dev/tunnel sessions do not serve an
-  // old HTML shell with missing Next.js chunks, which makes buttons look dead.
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
-    );
     return;
   }
 

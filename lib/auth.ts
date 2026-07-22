@@ -30,6 +30,7 @@ function authError(message: string) {
 
 async function createProfileRecords(payload: {
   accessToken?: string;
+  password?: string;
   role: 'client' | 'psychiatrist';
   profile: {
     fullName: string;
@@ -45,13 +46,18 @@ async function createProfileRecords(payload: {
     fee: number;
   };
 }) {
-  const response = await fetch('/api/auth/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/auth/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw authError('Unable to reach the profile API. Restart npm run dev after changing .env.local and try again.');
+  }
 
-  const result = await response.json();
+  const result = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw authError(result.error || 'Unable to save account profile.');
   }
@@ -79,16 +85,18 @@ export async function getProfile(userId: string): Promise<AuthProfile> {
 async function resolveEmail(identifier: string) {
   if (identifier.includes('@')) return identifier;
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('phone', identifier)
-    .maybeSingle();
+  const response = await fetch('/api/auth/resolve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier }),
+  });
+  const result = await response.json().catch(() => ({}));
 
-  if (error) throw authError(error.message);
-  if (!data?.email) throw authError('No account found for this mobile number.');
+  if (!response.ok || !result.email) {
+    throw authError(result.error || 'No account found for this mobile number.');
+  }
 
-  return data.email;
+  return result.email as string;
 }
 
 export async function signInWithRole(
@@ -131,30 +139,8 @@ export async function signInWithRole(
 }
 
 export async function registerClient(values: ClientRegisterValues): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signUp({
-    email: values.email,
-    password: values.password,
-    options: {
-      data: {
-        full_name: values.name,
-        phone: values.phone,
-        role: 'client',
-        district: values.district,
-        preferred_languages: values.languages,
-      },
-    },
-  });
-
-  if (error || !data.user) {
-    throw authError(error?.message || 'Unable to create patient account.');
-  }
-
-  const accessToken =
-    data.session?.access_token ||
-    (await supabase.auth.getSession()).data.session?.access_token;
-
   const profile = await createProfileRecords({
-    accessToken,
+    password: values.password,
     role: 'client',
     profile: {
       fullName: values.name,
@@ -167,41 +153,19 @@ export async function registerClient(values: ClientRegisterValues): Promise<Auth
     },
   });
 
+  await supabase.auth.signInWithPassword({
+    email: values.email,
+    password: values.password,
+  });
+
   return {
     profile,
-    warning: data.session ? undefined : 'Account created. Please confirm email if Supabase email confirmation is enabled.',
   };
 }
 
 export async function registerPsychiatrist(values: PsychiatristRegisterValues): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signUp({
-    email: values.email,
-    password: values.password,
-    options: {
-      data: {
-        full_name: values.name,
-        phone: values.phone,
-        role: 'psychiatrist',
-        district: values.district,
-        slmc_number: values.slmcNumber,
-        qualifications: values.qualifications,
-        specializations: values.specializations,
-        consultation_languages: values.languages,
-        slmc_document_name: values.slmcDocumentName,
-      },
-    },
-  });
-
-  if (error || !data.user) {
-    throw authError(error?.message || 'Unable to create doctor account.');
-  }
-
-  const accessToken =
-    data.session?.access_token ||
-    (await supabase.auth.getSession()).data.session?.access_token;
-
   const profile = await createProfileRecords({
-    accessToken,
+    password: values.password,
     role: 'psychiatrist',
     profile: {
       fullName: values.name,
@@ -213,6 +177,11 @@ export async function registerPsychiatrist(values: PsychiatristRegisterValues): 
       bio: values.bio,
       fee: values.fee,
     },
+  });
+
+  await supabase.auth.signInWithPassword({
+    email: values.email,
+    password: values.password,
   });
 
   return {

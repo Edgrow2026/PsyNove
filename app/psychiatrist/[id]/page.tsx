@@ -53,7 +53,7 @@ export default function PsychiatristProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             <div className="lg:col-span-4 bg-paper p-6 flex flex-col items-center justify-center text-center space-y-4 border-b lg:border-b-0 lg:border-r border-hairline">
               <div className="relative w-40 h-40 rounded-3xl overflow-hidden border border-hairline bg-white shadow-sm">
-                <Image src={doctor.photo} alt={doctor.name} fill className="object-cover" referrerPolicy="no-referrer" />
+                <Image src={doctor.photo} alt={doctor.name} width={160} height={160} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold font-display text-ink-navy">{doctor.name}</h1>

@@ -20,7 +20,7 @@ interface LoginModalProps {
 const roleMeta: Record<LoginRole, { label: string; helper: string; icon: typeof UserRound }> = {
   client: {
     label: 'Patient',
-    helper: 'Mobile number and password',
+    helper: 'Email or mobile and password',
     icon: UserRound,
   },
   psychiatrist: {
@@ -49,13 +49,13 @@ export default function LoginModal({
   onShowClientRegister,
   onShowPsychiatristRegister,
 }: LoginModalProps) {
-  const [identifier, setIdentifier] = useState('+94771234567');
-  const [password, setPassword] = useState('123456');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selected = roleMeta[activeRole];
-  const IdentifierIcon = activeRole === 'client' ? Phone : Mail;
+  const IdentifierIcon = activeRole === 'client' ? UserRound : Mail;
 
   const statusMessage = useMemo(() => {
     if (activeRole === 'psychiatrist') {
@@ -107,8 +107,8 @@ export default function LoginModal({
               onClick={() => {
                 onRoleChange(role);
                 setLocalError('');
-                setIdentifier(role === 'client' ? '+94771234567' : '');
-                setPassword(role === 'client' ? '123456' : '');
+                setIdentifier('');
+                setPassword('');
               }}
               className={`min-h-16 rounded-xl border p-2.5 text-left transition-all ${
                 isActive
@@ -143,7 +143,7 @@ export default function LoginModal({
       <form onSubmit={handleSubmit} className="rounded-2xl border border-hairline bg-white p-3.5 space-y-3.5 shadow-sm">
         <div className="space-y-1">
           <label className="text-[10px] font-extrabold uppercase tracking-wide text-slate-600">
-            {activeRole === 'client' ? 'Mobile number' : 'Email or username'}
+            {activeRole === 'client' ? 'Email or mobile number' : 'Email or username'}
           </label>
           <div className="flex h-11 items-center gap-2 rounded-xl border border-hairline bg-paper px-3">
             <IdentifierIcon className="h-4 w-4 flex-shrink-0 text-warm-turmeric" />
@@ -151,7 +151,7 @@ export default function LoginModal({
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
               className="w-full bg-transparent text-xs font-bold text-ink-navy outline-hidden"
-              placeholder={activeRole === 'client' ? '+94 77 123 4567' : 'account@psynova.lk'}
+              placeholder={activeRole === 'client' ? 'patient@email.com or +94771234567' : 'account@psynova.lk'}
             />
           </div>
         </div>

@@ -123,34 +123,9 @@ export default function HomePage() {
         .select(
           `
         user_id,
-        slmc_number,
-        qualifications,
         bio,
-        specializations,
-        consultation_languages,
         consultation_fee,
         verification_status,
-        is_boosted,
-        boost_expires_at,
-        profiles (
-          full_name,
-          district,
-          avatar_url
-        )
-      `,
-        )
-        .select(
-          `
-        user_id,
-        slmc_number,
-        qualifications,
-        bio,
-        specializations,
-        consultation_languages,
-        consultation_fee,
-        verification_status,
-        is_boosted,
-        boost_expires_at,
         profiles (
           full_name,
           district,
@@ -161,13 +136,11 @@ export default function HomePage() {
         .eq("verification_status", "verified");
 
       if (error) {
-        console.error("Error fetching psychiatrists:", error);
-        console.error("Error fetching psychiatrists:", error);
+        console.warn("Unable to fetch Supabase psychiatrist profiles:", error);
         return;
       }
 
-      console.log("Psychiatrists:", data);
-      console.log("Psychiatrists:", data);
+      console.info("Supabase psychiatrist profiles:", data);
     }
 
     fetchPsychiatrists();

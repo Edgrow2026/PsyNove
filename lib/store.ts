@@ -286,6 +286,23 @@ class StateStore {
   private listeners: (() => void)[] = [];
   private hydrated = false;
 
+  private normalizeState(state: Partial<AppState>): AppState {
+    return {
+      ...DEFAULT_STATE,
+      ...state,
+      psychiatrists: state.psychiatrists || DEFAULT_STATE.psychiatrists,
+      clients: state.clients || DEFAULT_STATE.clients,
+      bookings: state.bookings || DEFAULT_STATE.bookings,
+      complaints: state.complaints || DEFAULT_STATE.complaints,
+      smsInbox: state.smsInbox || DEFAULT_STATE.smsInbox,
+      config: {
+        ...DEFAULT_STATE.config,
+        ...(state.config || {}),
+        adminAccounts: state.config?.adminAccounts || DEFAULT_STATE.config.adminAccounts,
+      },
+    };
+  }
+
   private hydrateFromBrowser() {
     if (this.hydrated || typeof window === 'undefined') return;
     this.hydrated = true;
@@ -293,13 +310,13 @@ class StateStore {
     const stored = localStorage.getItem('psynova_store');
     if (stored) {
       try {
-        this.state = JSON.parse(stored);
+        this.state = this.normalizeState(JSON.parse(stored));
         if (!this.state.languagePreferenceSet) {
           this.state.currentLanguage = 'si';
-          this.save();
         }
+        this.save();
       } catch (e) {
-        console.error("Failed to parse store, resetting", e);
+        console.warn("Failed to parse store, resetting", e);
         this.state = { ...DEFAULT_STATE };
         localStorage.setItem('psynova_store', JSON.stringify(this.state));
       }
@@ -404,6 +421,23 @@ class StateStore {
       this.state.psychiatrists = existing
         ? this.state.psychiatrists.map(doctor => doctor.id === profile.id ? doctorProfile : doctor)
         : [doctorProfile, ...this.state.psychiatrists];
+    }
+
+    if (profile.role === 'admin' || profile.role === 'superadmin') {
+      const existing = this.state.config.adminAccounts.find(admin => admin.id === profile.id);
+      const adminProfile = {
+        id: profile.id,
+        name: profile.full_name || (profile.role === 'superadmin' ? 'PsyNova Super Admin' : 'PsyNova Admin'),
+        role: profile.role === 'superadmin' ? 'Super Admin' : 'Admin',
+        permissions:
+          profile.role === 'superadmin'
+            ? ['Commission policy', 'Admin management', 'Revenue analytics']
+            : ['SLMC verification', 'Refund approval', 'Complaint resolution'],
+      };
+
+      this.state.config.adminAccounts = existing
+        ? this.state.config.adminAccounts.map(admin => admin.id === profile.id ? adminProfile : admin)
+        : [adminProfile, ...this.state.config.adminAccounts];
     }
 
     this.state.currentRole = profile.role;
