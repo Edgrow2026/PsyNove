@@ -336,6 +336,11 @@ export default function RoleDashboardSection({
   handleExportCSV,
 }: RoleDashboardSectionProps) {
   const copy = dashboardCopy[state.currentLanguage];
+  const loggedInUserId = state.loggedInUserId || "";
+  const activeClient = loggedInUserId
+    ? state.clients.find((client) => client.id === loggedInUserId)
+    : null;
+  const accountIdLabel = state.currentLanguage === "ta" ? "கணக்கு ID" : state.currentLanguage === "si" ? "ගිණුම් ID" : "Account ID";
 
   return (
     <>
@@ -473,8 +478,13 @@ export default function RoleDashboardSection({
                   {t.myDashboard}
                 </h3>
                 <p className="text-slate-600 text-xs">
-                  {t.roleClient}: Kavindu Wickramasinghe
+                  {t.roleClient}: {activeClient?.name || "PsyNova Client"}
                 </p>
+                {loggedInUserId && (
+                  <p className="mt-1 break-all font-mono text-[10px] font-bold text-slate-500">
+                    {accountIdLabel}: {loggedInUserId}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => {
@@ -508,8 +518,18 @@ export default function RoleDashboardSection({
                   return (
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
+                        <span className="text-slate-600">{accountIdLabel}</span>
+                        <strong className="max-w-[60%] break-all text-right font-mono text-[10px]">
+                          {client.id}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-slate-600">{copy.name}</span>
                         <strong>{client.name}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">NIC</span>
+                        <strong>{client.nic || "Not saved"}</strong>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-600">{copy.mobile}</span>
@@ -691,9 +711,14 @@ export default function RoleDashboardSection({
                   <strong className="text-ink-navy">
                     {state.psychiatrists.find(
                       (d) => d.id === state.loggedInUserId,
-                    )?.name || "Dr. Ruwan Fernando"}
+                    )?.name || "PsyNova Psychiatrist"}
                   </strong>
                 </p>
+                {loggedInUserId && (
+                  <p className="mt-1 break-all font-mono text-[10px] font-bold text-slate-500">
+                    {accountIdLabel}: {loggedInUserId}
+                  </p>
+                )}
               </div>
 
               {/* Boosting Package Option */}
@@ -730,6 +755,14 @@ export default function RoleDashboardSection({
                     </h4>
                     <p className="text-slate-700 leading-relaxed">
                       {doctor.bio}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      {accountIdLabel}:{" "}
+                      <strong className="break-all font-mono">{doctor.id}</strong>
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      SLMC: <strong>{doctor.slmcNumber}</strong> · Fee:{" "}
+                      <strong>LKR {doctor.fee}</strong>
                     </p>
                     <p className="text-[10px] text-slate-500">
                       {copy.registryProof}:{" "}
@@ -954,6 +987,11 @@ export default function RoleDashboardSection({
                 <p className="text-slate-600 text-xs font-sans">
                   {copy.adminSub}
                 </p>
+                {loggedInUserId && (
+                  <p className="mt-1 break-all font-mono text-[10px] font-bold text-slate-500">
+                    {accountIdLabel}: {loggedInUserId}
+                  </p>
+                )}
               </div>
               <button
                 onClick={handleExportCSV}
@@ -1205,6 +1243,11 @@ export default function RoleDashboardSection({
               <p className="text-slate-600 text-xs font-sans">
                 {copy.superadminSub}
               </p>
+              {loggedInUserId && (
+                <p className="mt-1 break-all font-mono text-[10px] font-bold text-slate-500">
+                  {accountIdLabel}: {loggedInUserId}
+                </p>
+              )}
             </div>
 
             {/* Multi-language Commission Rates Form */}
@@ -1376,6 +1419,9 @@ export default function RoleDashboardSection({
                       <strong className="block text-ink-navy">
                         {admin.name}
                       </strong>
+                      <span className="block break-all font-mono text-[10px] font-bold text-slate-500">
+                        {accountIdLabel}: {admin.id}
+                      </span>
                       <span className="text-slate-600">{admin.role}</span>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {admin.permissions.map((permission) => (

@@ -19,6 +19,11 @@ interface ProfileRequestBody {
   psychiatrist?: {
     bio: string;
     fee: number;
+    slmcNumber: string;
+    qualifications: string;
+    specializations: string[];
+    languages: string[];
+    slmcDocumentName: string;
   };
 }
 
@@ -131,7 +136,7 @@ export async function POST(request: NextRequest) {
 
       const { error: clientError } = await admin
         .from('client_profiles')
-        .upsert({ user_id: userId, nic: body.client.nic });
+        .upsert({ user_id: userId, nic: body.client.nic }, { onConflict: 'user_id' });
 
       if (clientError) {
         return NextResponse.json({ error: clientError.message }, { status: 500 });
@@ -143,15 +148,41 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing psychiatrist profile details.' }, { status: 400 });
       }
 
-      const { error: doctorError } = await admin.from('psychiatrist_profiles').upsert({
+      const doctorPayload = {
         user_id: userId,
         bio: body.psychiatrist.bio,
         consultation_fee: body.psychiatrist.fee,
+        slmc_number: body.psychiatrist.slmcNumber,
+        qualifications: body.psychiatrist.qualifications,
+        specializations: body.psychiatrist.specializations,
+        languages: body.psychiatrist.languages,
+        slmc_document_name: body.psychiatrist.slmcDocumentName,
         verification_status: 'pending',
-      });
+      };
+
+      const { error: doctorError } = await admin
+        .from('psychiatrist_profiles')
+        .upsert(doctorPayload, { onConflict: 'user_id' });
 
       if (doctorError) {
-        return NextResponse.json({ error: doctorError.message }, { status: 500 });
+        const missingColumn = /column .* does not exist/i.test(doctorError.message);
+
+        if (!missingColumn) {
+          return NextResponse.json({ error: doctorError.message }, { status: 500 });
+        }
+
+        const { error: fallbackDoctorError } = await admin
+          .from('psychiatrist_profiles')
+          .upsert({
+            user_id: userId,
+            bio: body.psychiatrist.bio,
+            consultation_fee: body.psychiatrist.fee,
+            verification_status: 'pending',
+          }, { onConflict: 'user_id' });
+
+        if (fallbackDoctorError) {
+          return NextResponse.json({ error: fallbackDoctorError.message }, { status: 500 });
+        }
       }
     }
 
@@ -159,6 +190,15 @@ export async function POST(request: NextRequest) {
       profile: {
         ...profilePayload,
         role: body.role,
+        nic: body.client?.nic,
+        bio: body.psychiatrist?.bio,
+        fee: body.psychiatrist?.fee,
+        slmcNumber: body.psychiatrist?.slmcNumber,
+        qualifications: body.psychiatrist?.qualifications,
+        specializations: body.psychiatrist?.specializations,
+        languages: body.psychiatrist?.languages,
+        slmcDocumentName: body.psychiatrist?.slmcDocumentName,
+        verificationStatus: body.role === 'psychiatrist' ? 'pending' : undefined,
       },
     });
   } catch (error) {
