@@ -16,5 +16,3 @@ export function getSupabase() {
 }
 
 export const supabase = getSupabase();
-
-export default supabase;
