@@ -27,6 +27,7 @@ import {
 } from "../lib/store";
 import { translations, Language } from "../lib/translations";
 import { uiCopy } from "../lib/ui-copy";
+import { registerClient as registerAuthClient } from "../lib/auth";
 
 export default function HomePage() {
   const [state, setState] = useState<AppState>(() => store.getState());
@@ -317,40 +318,20 @@ export default function HomePage() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email: regEmail,
-      password: regPassword,
-      options: {
-        data: {
-          full_name: regName,
-          mobile: regPhone,
-          role: "client",
-          ui_language: "si",
-        },
-      },
-    });
-
-    if (error) {
-      console.error("Registration error:", error);
-      alert(error.message);
-      return;
-    }
-
-    if (!data.user) {
-      alert("Unable to create the user account.");
-      return;
-    }
-
-    const { error: clientProfileError } = await supabase
-      .from("client_profiles")
-      .insert({
-        user_id: data.user.id,
-        nic_or_passport_encrypted: regNIC,
+    try {
+      const result = await registerAuthClient({
+        name: regName,
+        nic: regNIC,
+        phone: regPhone,
+        email: regEmail,
+        district: regDistrict,
+        languages: regLanguages,
+        password: regPassword,
       });
-
-    if (clientProfileError) {
-      console.error("Client profile error:", clientProfileError);
-      alert(clientProfileError.message);
+      store.syncAuthenticatedProfile(result.profile);
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert(error instanceof Error ? error.message : "Unable to create the user account.");
       return;
     }
   };
