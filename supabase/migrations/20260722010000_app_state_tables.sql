@@ -99,6 +99,14 @@ insert into public.app_system_config (id)
 values ('default')
 on conflict (id) do nothing;
 
+alter table public.app_clients enable row level security;
+alter table public.app_psychiatrists enable row level security;
+alter table public.app_bookings enable row level security;
+alter table public.app_complaints enable row level security;
+alter table public.app_consultation_messages enable row level security;
+alter table public.app_sms_messages enable row level security;
+alter table public.app_system_config enable row level security;
+
 create index if not exists app_psychiatrists_verified_idx on public.app_psychiatrists(slmc_verified);
 create index if not exists app_bookings_client_id_idx on public.app_bookings(client_id);
 create index if not exists app_bookings_psychiatrist_id_idx on public.app_bookings(psychiatrist_id);
