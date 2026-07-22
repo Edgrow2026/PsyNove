@@ -102,6 +102,9 @@ export default function HomePage() {
   const [complaintNotes, setComplaintNotes] = useState("");
   const [complaintSuccess, setComplaintSuccess] = useState(false);
 
+  // Psychiatrists State
+  const [psychiatrists, setPsychiatrists] = useState<Psychiatrist[]>([]);
+
   // Admin / Settings Inputs
   const [commissionInput, setCommissionInput] = useState<number>(18);
   const [adminResolutionInput, setAdminResolutionInput] = useState<
@@ -117,28 +120,9 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    async function fetchPsychiatrists() {
+    const fetchPsychiatrists = async () => {
       const { data, error } = await supabase
         .from("psychiatrist_profiles")
-        .select(
-          `
-        user_id,
-        slmc_number,
-        qualifications,
-        bio,
-        specializations,
-        consultation_languages,
-        consultation_fee,
-        verification_status,
-        is_boosted,
-        boost_expires_at,
-        profiles (
-          full_name,
-          district,
-          avatar_url
-        )
-      `,
-        )
         .select(
           `
         user_id,
@@ -161,14 +145,40 @@ export default function HomePage() {
         .eq("verification_status", "verified");
 
       if (error) {
-        console.error("Error fetching psychiatrists:", error);
-        console.error("Error fetching psychiatrists:", error);
+        console.log("Supabase error message:", error.message);
+        console.log("Supabase error code:", error.code);
+        console.log("Supabase error details:", error.details);
+        console.log("Supabase error hint:", error.hint);
         return;
       }
 
-      console.log("Psychiatrists:", data);
-      console.log("Psychiatrists:", data);
-    }
+      const formattedPsychiatrists: Psychiatrist[] = (data ?? []).map(
+        (item) => {
+          const profile = Array.isArray(item.profiles)
+            ? item.profiles[0]
+            : item.profiles;
+
+          return {
+            id: item.user_id,
+            name: profile?.full_name ?? "Unknown psychiatrist",
+            photo: profile?.avatar_url ?? "/images/default-avatar.png",
+            district: profile?.district ?? "",
+            languages: item.consultation_languages ?? [],
+            specializations: item.specializations ?? [],
+            qualifications: item.qualifications ?? [],
+            bio: item.bio ?? "",
+            fee: item.consultation_fee ?? 0,
+            slmcNumber: item.slmc_number ?? "",
+            slmcVerified: item.verification_status === "verified",
+            isBoosted: item.is_boosted ?? false,
+            boostExpiresAt: item.boost_expires_at ?? undefined,
+            availableSlots: [],
+          };
+        },
+      );
+
+      setPsychiatrists(formattedPsychiatrists);
+    };
 
     fetchPsychiatrists();
   }, []);
@@ -300,8 +310,9 @@ export default function HomePage() {
 
   const handleClientRegisterSubmit = async (
     e: React.SyntheticEvent<HTMLFormElement>,
-  ) => {
+  ): Promise<void> => {
     e.preventDefault();
+
     if (!regName || !regNIC || !regPhone || !regEmail || !regPassword) {
       alert("Please complete all required fields.");
       return;
@@ -323,29 +334,12 @@ export default function HomePage() {
       alert(error instanceof Error ? error.message : "Unable to create the user account.");
       return;
     }
-
-    setShowRegisterFlow(false);
-
-    // Continue your current booking/payment flow
-    if (selectedDoc && bookingSlot) {
-      const [datePart, timePart] = bookingSlot.split("T");
-
-      setPaymentPendingBooking({
-        docId: selectedDoc.id,
-        docName: selectedDoc.name,
-        fee: selectedDoc.fee,
-        date: datePart,
-        time: formatTimeStr(timePart),
-      });
-
-      setPaymentCountdown(300);
-      setShowPaymentModal(true);
-    }
-
-    alert("Registration successful.");
   };
+
+  // Continue your current booking/payment flow
   const completePaidBooking = () => {
     if (!paymentPendingBooking) return;
+
     const fee = paymentPendingBooking.fee;
     const commission = Math.round(fee * (state.config.commissionRate / 100));
     const total = fee + commission;
@@ -372,6 +366,7 @@ export default function HomePage() {
     });
 
     setPayStatus("success");
+
     setTimeout(() => {
       setShowPaymentModal(false);
       setPaymentPendingBooking(null);
@@ -383,92 +378,196 @@ export default function HomePage() {
     }, 2000);
   };
 
+  const verifyPayHerePayment = async (orderId: string) => {
+    const maximumAttempts = 15;
+    const delayMilliseconds = 2000;
+
+    for (let attempt = 1; attempt <= maximumAttempts; attempt++) {
+      try {
+        const response = await fetch(
+          `/api/payhere/status?orderId=${encodeURIComponent(orderId)}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
+        );
+
+        const result = await response.json();
+
+        console.log(`Payment verification attempt ${attempt}:`, result);
+
+        if (response.ok && result.status === "paid") {
+          completePaidBooking();
+          return;
+        }
+
+        if (
+          result.status === "failed" ||
+          result.status === "cancelled" ||
+          result.status === "chargeback"
+        ) {
+          setPayStatus("failed");
+          return;
+        }
+      } catch (error) {
+        console.error("Payment verification attempt failed:", error);
+      }
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMilliseconds);
+      });
+    }
+
+    console.error("Payment verification timed out:", orderId);
+    setPayStatus("failed");
+  };
+
   const loadPayHereScript = () => {
-    if (typeof window === "undefined") return Promise.reject();
-    if ((window as any).payhere) return Promise.resolve();
+    if (typeof window === "undefined") {
+      return Promise.reject(new Error("PayHere can only load in the browser"));
+    }
+
+    if ((window as any).payhere) {
+      return Promise.resolve();
+    }
 
     return new Promise<void>((resolve, reject) => {
-      const existing = document.getElementById("payhere-sdk");
-      if (existing) {
-        existing.addEventListener("load", () => resolve());
-        existing.addEventListener("error", reject);
+      const existingScript = document.getElementById("payhere-sdk");
+
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve(), {
+          once: true,
+        });
+
+        existingScript.addEventListener(
+          "error",
+          () => reject(new Error("Failed to load PayHere SDK")),
+          { once: true },
+        );
+
         return;
       }
 
       const script = document.createElement("script");
+
       script.id = "payhere-sdk";
       script.src = "https://www.payhere.lk/lib/payhere.js";
       script.async = true;
+
       script.onload = () => resolve();
-      script.onerror = reject;
+
+      script.onerror = () => {
+        reject(new Error("Failed to load PayHere SDK"));
+      };
+
       document.body.appendChild(script);
     });
   };
 
   const handleProcessPayment = async () => {
     if (!paymentPendingBooking) return;
+
     setPayStatus("processing");
 
     const fee = paymentPendingBooking.fee;
     const commission = Math.round(fee * (state.config.commissionRate / 100));
     const total = fee + commission;
+
     const activeClient =
-      state.clients.find((c) => c.id === state.loggedInUserId) ||
+      state.clients.find((client) => client.id === state.loggedInUserId) ||
       state.clients[0];
+
+    if (!state.loggedInUserId) {
+      console.error("Client ID is missing");
+      setPayStatus("failed");
+      return;
+    }
+
     const orderId = `PSYNOVA-${Date.now()}`;
 
     try {
-      const res = await fetch("/api/payhere/hash", {
+      const response = await fetch("/api/payhere/hash", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, amount: total, currency: "LKR" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          amount: total,
+          currency: "LKR",
+          clientId: state.loggedInUserId,
+          psychiatristId: paymentPendingBooking.docId,
+        }),
       });
-      const payhereConfig = await res.json();
 
-      if (payhereConfig.configured) {
-        await loadPayHereScript();
-        const payhere = (window as any).payhere;
+      const payhereConfig = await response.json();
 
-        payhere.onCompleted = () => completePaidBooking();
-        payhere.onDismissed = () => setPayStatus("idle");
-        payhere.onError = () => setPayStatus("failed");
+      if (!response.ok || !payhereConfig.configured) {
+        console.error("PayHere initialization failed:", payhereConfig);
 
-        payhere.startPayment({
-          sandbox: payhereConfig.sandbox,
-          merchant_id: payhereConfig.merchantId,
-          return_url: payhereConfig.returnUrl,
-          cancel_url: payhereConfig.cancelUrl,
-          notify_url: payhereConfig.notifyUrl,
-          order_id: payhereConfig.orderId,
-          items: `PsyNova consultation with ${paymentPendingBooking.docName}`,
-          amount: payhereConfig.amount,
-          currency: payhereConfig.currency,
-          hash: payhereConfig.hash,
-          first_name: activeClient?.name?.split(" ")[0] || "PsyNova",
-          last_name:
-            activeClient?.name?.split(" ").slice(1).join(" ") || "Client",
-          email: activeClient?.email || "client@psynova.lk",
-          phone: activeClient?.phone || "+94770000000",
-          address: activeClient?.district || "Colombo",
-          city: activeClient?.district || "Colombo",
-          country: "Sri Lanka",
-        });
-        return;
-      }
-    } catch (error) {
-      console.warn(
-        "PayHere checkout unavailable, using local simulator fallback.",
-        error,
-      );
-    }
-
-    setTimeout(() => {
-      if (paymentMethod === "card" && cardNumber.length < 12) {
         setPayStatus("failed");
         return;
       }
-      completePaidBooking();
-    }, 1200);
+
+      await loadPayHereScript();
+
+      const payhere = (window as any).payhere;
+
+      if (!payhere) {
+        throw new Error("PayHere SDK is unavailable");
+      }
+
+      payhere.onCompleted = (completedOrderId: string) => {
+        console.log("PayHere checkout completed:", completedOrderId);
+
+        // Do not mark the booking paid here.
+        // Wait until the backend verifies status_code = 2.
+        setPayStatus("processing");
+        void verifyPayHerePayment(completedOrderId);
+      };
+
+      payhere.onDismissed = () => {
+        console.log("PayHere checkout dismissed");
+        setPayStatus("idle");
+      };
+
+      payhere.onError = (error: unknown) => {
+        console.error("PayHere checkout error:", error);
+        setPayStatus("failed");
+      };
+
+      payhere.startPayment({
+        sandbox: payhereConfig.sandbox,
+        merchant_id: payhereConfig.merchantId,
+        return_url: payhereConfig.returnUrl,
+        cancel_url: payhereConfig.cancelUrl,
+        notify_url: payhereConfig.notifyUrl,
+        order_id: payhereConfig.orderId,
+        items: `PsyNova consultation with ${paymentPendingBooking.docName}`,
+        amount: payhereConfig.amount,
+        currency: payhereConfig.currency,
+        hash: payhereConfig.hash,
+
+        first_name: activeClient?.name?.trim().split(" ")[0] || "PsyNova",
+
+        last_name:
+          activeClient?.name?.trim().split(" ").slice(1).join(" ") || "Client",
+
+        email: activeClient?.email || "client@psynova.lk",
+
+        phone: activeClient?.phone || "+94770000000",
+
+        address: activeClient?.district || "Colombo",
+
+        city: activeClient?.district || "Colombo",
+
+        country: "Sri Lanka",
+      });
+    } catch (error) {
+      console.error("PayHere checkout could not be initialized:", error);
+
+      setPayStatus("failed");
+    }
   };
 
   // Doctor Action
