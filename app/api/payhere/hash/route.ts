@@ -6,7 +6,8 @@ export async function POST(request: NextRequest) {
   const merchantId = process.env.PAYHERE_MERCHANT_ID || process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
   const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
   const appUrl = process.env.APP_URL || 'http://localhost:3000';
-  const sandbox = process.env.NEXT_PUBLIC_PAYHERE_SANDBOX !== 'false';
+  const sandboxFlag = process.env.PAYHERE_SANDBOX || process.env.NEXT_PUBLIC_PAYHERE_SANDBOX;
+  const sandbox = sandboxFlag !== 'false';
 
   if (!merchantId || !merchantSecret || !orderId || !amount) {
     return NextResponse.json({

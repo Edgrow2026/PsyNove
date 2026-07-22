@@ -41,16 +41,10 @@ export default function Navbar({ activeSection = 'home' }: NavbarProps) {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      const user = data.session?.user;
-      if (!user || !isMounted) return;
+    store.setRole('guest', null);
 
-      try {
-        const profile = await getProfile(user.id);
-        store.syncAuthenticatedProfile(profile);
-      } catch (error) {
-        console.warn('Unable to restore auth session.', error);
-      }
+    supabase.auth.signOut().catch((error) => {
+      console.warn('Unable to clear saved auth session on startup.', error);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
