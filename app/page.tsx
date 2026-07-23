@@ -75,14 +75,9 @@ export default function HomePage() {
     date: string;
     time: string;
   } | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"lankapay" | "card">(
-    "card",
-  );
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCVV, setCardCVV] = useState("");
+
   const [payStatus, setPayStatus] = useState<
-    "idle" | "processing" | "success" | "failed"
+    "idle" | "processing" | "success" | "failed" | "pending"
   >("idle");
 
   // Doctor Calendar Slot State
@@ -372,9 +367,6 @@ export default function HomePage() {
       setPaymentPendingBooking(null);
       setBookingSlot(null);
       setPayStatus("idle");
-      setCardNumber("");
-      setCardExpiry("");
-      setCardCVV("");
     }, 2000);
   };
 
@@ -400,6 +392,13 @@ export default function HomePage() {
           completePaidBooking();
           return;
         }
+        if (result.status === "initiated" || result.status === "pending") {
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, delayMilliseconds);
+          });
+
+          continue;
+        }
 
         if (
           result.status === "failed" ||
@@ -418,8 +417,8 @@ export default function HomePage() {
       });
     }
 
-    console.error("Payment verification timed out:", orderId);
-    setPayStatus("failed");
+    console.warn("Payment verification still pending:", orderId);
+    setPayStatus("pending");
   };
 
   const loadPayHereScript = () => {
@@ -766,49 +765,14 @@ export default function HomePage() {
 
       {/* --- ALL MODALS & FLYOUTS (Single-screen architecture) --- */}
 
-      {showRegisterFlow && selectedDoc && bookingSlot && (
-        <ClientRegistrationModal
-          selectedDoc={selectedDoc}
-          bookingSlot={bookingSlot}
-          districtList={districtList}
-          t={t}
-          lang={lang}
-          regName={regName}
-          regNIC={regNIC}
-          regPhone={regPhone}
-          regEmail={regEmail}
-          regDistrict={regDistrict}
-          regPassword={regPassword}
-          setRegName={setRegName}
-          setRegNIC={setRegNIC}
-          setRegPhone={setRegPhone}
-          setRegEmail={setRegEmail}
-          setRegDistrict={setRegDistrict}
-          setRegPassword={setRegPassword}
-          onClose={closeRegisterFlow}
-          onUseSandboxClient={handleUseSandboxClient}
-          onSubmit={handleClientRegisterSubmit}
-        />
-      )}
-
       {showPaymentModal && paymentPendingBooking && (
         <PaymentModal
           booking={paymentPendingBooking}
           paymentCountdown={paymentCountdown}
           commissionRate={state.config.commissionRate}
-          paymentMethod={paymentMethod}
-          cardNumber={cardNumber}
-          cardExpiry={cardExpiry}
-          cardCVV={cardCVV}
           payStatus={payStatus}
-          lankaPayEnabled={state.config.lankaPayEnabled}
-          cardPaymentEnabled={state.config.cardPaymentEnabled}
           t={t}
           lang={lang}
-          setPaymentMethod={setPaymentMethod}
-          setCardNumber={setCardNumber}
-          setCardExpiry={setCardExpiry}
-          setCardCVV={setCardCVV}
           onCancel={() => {
             setShowPaymentModal(false);
             setPaymentPendingBooking(null);
@@ -816,7 +780,6 @@ export default function HomePage() {
           onProcessPayment={handleProcessPayment}
         />
       )}
-
       {activeVideoRoom && (
         <VideoRoomModal
           booking={activeVideoRoom}

@@ -29,8 +29,17 @@ function mapPayHereStatus(statusCode: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const appUrl = request.nextUrl.origin;
+  console.log("PAYHERE WEBHOOK ENDPOINT HIT");
+  console.log("PayHere notify URL:", `${appUrl}/api/payhere/notify`);
+
   try {
     const formData = await request.formData();
+
+    console.log(
+      "Raw PayHere notification:",
+      Object.fromEntries(formData.entries()),
+    );
 
     const merchantId = String(formData.get("merchant_id") ?? "");
     const orderId = String(formData.get("order_id") ?? "");
@@ -120,6 +129,10 @@ export async function POST(request: NextRequest) {
       paymentStatus,
       statusCode,
     });
+    console.log(
+      "PayHere notification data:",
+      Object.fromEntries(formData.entries()),
+    );
 
     return new NextResponse("OK", { status: 200 });
   } catch (error) {
