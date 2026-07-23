@@ -1,4 +1,5 @@
 import { Language } from './translations';
+import { loadDatabaseSnapshot, saveFullDatabaseSnapshot, syncDatabaseAction } from './database-sync';
 
 export interface Psychiatrist {
   id: string;
@@ -285,6 +286,7 @@ class StateStore {
   private state: AppState = DEFAULT_STATE;
   private listeners: (() => void)[] = [];
   private hydrated = false;
+  private databaseHydrated = false;
 
   private normalizeState(state: Partial<AppState>): AppState {
     return {
@@ -311,6 +313,8 @@ class StateStore {
     if (stored) {
       try {
         this.state = this.normalizeState(JSON.parse(stored));
+        this.state.currentRole = 'guest';
+        this.state.loggedInUserId = null;
         if (!this.state.languagePreferenceSet) {
           this.state.currentLanguage = 'si';
         }
@@ -325,6 +329,43 @@ class StateStore {
     }
 
     this.notify();
+    void this.hydrateFromDatabase();
+  }
+
+  private applyDatabaseState(snapshot: Partial<AppState>) {
+    this.state = this.normalizeState({
+      ...this.state,
+      ...snapshot,
+      config: {
+        ...this.state.config,
+        ...(snapshot.config || {}),
+      },
+    });
+    this.save();
+  }
+
+  private async hydrateFromDatabase() {
+    if (this.databaseHydrated || typeof window === 'undefined') return;
+    this.databaseHydrated = true;
+
+    try {
+      const snapshot = await loadDatabaseSnapshot();
+
+      if (snapshot.hasDatabaseRows) {
+        this.applyDatabaseState({
+          psychiatrists: snapshot.psychiatrists,
+          clients: snapshot.clients,
+          bookings: snapshot.bookings,
+          complaints: snapshot.complaints,
+          config: snapshot.config,
+          smsInbox: snapshot.smsInbox,
+        });
+      } else {
+        saveFullDatabaseSnapshot(this.state);
+      }
+    } catch (error) {
+      console.warn('Unable to hydrate PsyNova state from Supabase.', error);
+    }
   }
 
   public getState(): AppState {
@@ -409,6 +450,11 @@ class StateStore {
       this.state.clients = existing
         ? this.state.clients.map(client => client.id === profile.id ? clientProfile : client)
         : [clientProfile, ...this.state.clients];
+
+      syncDatabaseAction('syncProfile', {
+        role: profile.role,
+        client: clientProfile,
+      });
     }
 
     if (profile.role === 'psychiatrist') {
@@ -435,6 +481,11 @@ class StateStore {
       this.state.psychiatrists = existing
         ? this.state.psychiatrists.map(doctor => doctor.id === profile.id ? doctorProfile : doctor)
         : [doctorProfile, ...this.state.psychiatrists];
+
+      syncDatabaseAction('syncProfile', {
+        role: profile.role,
+        doctor: doctorProfile,
+      });
     }
 
     if (profile.role === 'admin' || profile.role === 'superadmin') {
@@ -452,6 +503,11 @@ class StateStore {
       this.state.config.adminAccounts = existing
         ? this.state.config.adminAccounts.map(admin => admin.id === profile.id ? adminProfile : admin)
         : [adminProfile, ...this.state.config.adminAccounts];
+
+      syncDatabaseAction('syncProfile', {
+        role: profile.role,
+        config: this.state.config,
+      });
     }
 
     this.state.currentRole = profile.role;
@@ -474,12 +530,14 @@ class StateStore {
     };
     this.state.psychiatrists.push(newDoc);
     this.setRole('psychiatrist', id);
+    syncDatabaseAction('upsertDoctor', newDoc);
     this.save();
     return newDoc;
   }
 
   public updateDoctor(updated: Psychiatrist) {
     this.state.psychiatrists = this.state.psychiatrists.map(d => d.id === updated.id ? updated : d);
+    syncDatabaseAction('upsertDoctor', updated);
     this.save();
   }
 
@@ -487,6 +545,7 @@ class StateStore {
     const doc = this.state.psychiatrists.find(d => d.id === docId);
     if (doc) {
       Object.assign(doc, updates);
+      syncDatabaseAction('upsertDoctor', doc);
       this.save();
     }
   }
@@ -497,6 +556,7 @@ class StateStore {
       if (!doc.availableSlots.includes(slot)) {
         doc.availableSlots.push(slot);
         doc.availableSlots.sort();
+        syncDatabaseAction('upsertDoctor', doc);
         this.save();
       }
     }
@@ -507,6 +567,7 @@ class StateStore {
     if (doc) {
       doc.isBoosted = true;
       doc.boostExpiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+      syncDatabaseAction('upsertDoctor', doc);
       this.save();
     }
   }
@@ -515,6 +576,7 @@ class StateStore {
     const doc = this.state.psychiatrists.find(d => d.id === docId);
     if (doc) {
       doc.deactivatedAt = new Date().toISOString();
+      syncDatabaseAction('upsertDoctor', doc);
       this.save();
     }
   }
@@ -525,6 +587,7 @@ class StateStore {
     const newCli: ClientProfile = { ...cli, id };
     this.state.clients.push(newCli);
     this.setRole('client', id);
+    syncDatabaseAction('upsertClient', newCli);
     this.save();
     return newCli;
   }
@@ -533,6 +596,7 @@ class StateStore {
     const cli = this.state.clients.find(c => c.id === clientId);
     if (cli) {
       cli.deactivatedAt = new Date().toISOString();
+      syncDatabaseAction('upsertClient', cli);
       this.save();
     }
   }
@@ -541,6 +605,7 @@ class StateStore {
     const cli = this.state.clients.find(c => c.id === clientId);
     if (cli) {
       Object.assign(cli, updates);
+      syncDatabaseAction('upsertClient', cli);
       this.save();
     }
   }
@@ -549,6 +614,7 @@ class StateStore {
     const cli = this.state.clients.find(c => c.id === clientId);
     if (cli) {
       cli.suspended = suspended;
+      syncDatabaseAction('upsertClient', cli);
       this.save();
     }
   }
@@ -563,6 +629,7 @@ class StateStore {
       meetingLink
     };
     this.state.bookings.push(newBooking);
+    syncDatabaseAction('upsertBooking', newBooking);
 
     // Send simulated SMS confirmations
     this.sendSimulatedSMS(
@@ -575,6 +642,7 @@ class StateStore {
       // Remove booked slot
       const bookedSlotStr = `${bookingData.date}T${bookingData.time}`;
       doc.availableSlots = doc.availableSlots.filter(slot => !slot.includes(bookedSlotStr));
+      syncDatabaseAction('upsertDoctor', doc);
     }
 
     this.save();
@@ -585,6 +653,7 @@ class StateStore {
     const b = this.state.bookings.find(x => x.id === bookingId);
     if (b) {
       b.status = 'cancelled';
+      syncDatabaseAction('upsertBooking', b);
       this.save();
     }
   }
@@ -593,6 +662,7 @@ class StateStore {
     const b = this.state.bookings.find(x => x.id === bookingId);
     if (b) {
       b.status = 'refunded';
+      syncDatabaseAction('upsertBooking', b);
       this.sendSimulatedSMS(
         b.clientPhone,
         `[PsyNova] Refund approved for booking #${b.id}. The payment gateway settlement is now marked for manual processing.`
@@ -617,6 +687,7 @@ class StateStore {
     if (b) {
       b.status = 'completed';
       b.clinicalNotes = notes;
+      syncDatabaseAction('upsertBooking', b);
       this.save();
     }
   }
@@ -631,6 +702,7 @@ class StateStore {
       status: 'pending'
     };
     this.state.complaints.push(newCmp);
+    syncDatabaseAction('upsertComplaint', newCmp);
 
     // Send SMS notification
     const userPhone = complaintData.submittedBy === 'client' 
@@ -653,6 +725,7 @@ class StateStore {
     if (cmp) {
       cmp.status = 'resolved';
       cmp.resolutionDetails = resolution;
+      syncDatabaseAction('upsertComplaint', cmp);
       this.sendSimulatedSMS(
         "+94770000000",
         `[PsyNova] Complaint #${id} resolved. Decision: ${resolution}`
@@ -664,6 +737,7 @@ class StateStore {
   // Admin Configs
   public updateConfig(newConfig: Partial<SystemConfig>) {
     this.state.config = { ...this.state.config, ...newConfig };
+    syncDatabaseAction('updateConfig', this.state.config);
     this.save();
   }
 
@@ -674,6 +748,7 @@ class StateStore {
       role,
       permissions
     });
+    syncDatabaseAction('updateConfig', this.state.config);
     this.save();
   }
 
@@ -681,6 +756,7 @@ class StateStore {
     const doc = this.state.psychiatrists.find(d => d.id === docId);
     if (doc) {
       doc.slmcVerified = true;
+      syncDatabaseAction('upsertDoctor', doc);
       this.save();
     }
   }
@@ -689,22 +765,27 @@ class StateStore {
     const doc = this.state.psychiatrists.find(d => d.id === docId);
     if (doc) {
       doc.slmcVerified = !doc.slmcVerified;
+      syncDatabaseAction('upsertDoctor', doc);
       this.save();
     }
   }
 
   // Simulated SMS Trigger
   private sendSimulatedSMS(recipient: string, content: string) {
-    this.state.smsInbox.unshift({
+    const message = {
       id: `sms-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
       recipient,
       content,
       date: new Date().toLocaleTimeString()
-    });
+    };
+
+    this.state.smsInbox.unshift(message);
+    syncDatabaseAction('insertSms', message);
   }
 
   public clearSMS() {
     this.state.smsInbox = [];
+    syncDatabaseAction('clearSms', {});
     this.save();
   }
 }

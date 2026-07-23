@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
+
+  const { orderId, amount, currency = 'LKR' } = await request.json();
+  const merchantId = process.env.PAYHERE_MERCHANT_ID || process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
+  const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const sandboxFlag = process.env.PAYHERE_SANDBOX || process.env.NEXT_PUBLIC_PAYHERE_SANDBOX;
+  const sandbox = sandboxFlag !== 'false';
+=======
   try {
     const {
       orderId,
@@ -120,6 +128,7 @@ export async function POST(request: NextRequest) {
       )
       .digest("hex")
       .toUpperCase();
+
 
     return NextResponse.json({
       configured: true,

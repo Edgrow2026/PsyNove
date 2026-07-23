@@ -51,6 +51,32 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadMessages() {
+      try {
+        const response = await fetch(
+          `/api/consultation/messages?bookingId=${encodeURIComponent(booking.id)}`,
+          { cache: 'no-store' },
+        );
+        const result = await response.json().catch(() => ({}));
+
+        if (!cancelled && response.ok && Array.isArray(result.messages)) {
+          setMessages(result.messages);
+        }
+      } catch (error) {
+        console.warn('Unable to load consultation chat from Supabase.', error);
+      }
+    }
+
+    void loadMessages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [booking.id]);
+
+  useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(messages));
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, storageKey]);
@@ -93,14 +119,21 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
   }, [booking, messages]);
 
   const addMessage = (message: Omit<ConsultationMessage, 'id' | 'sentAt'>) => {
-    setMessages((current) => [
-      ...current,
-      {
-        ...message,
-        id: `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        sentAt: new Date().toISOString(),
-      },
-    ]);
+    const nextMessage = {
+      ...message,
+      id: `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      sentAt: new Date().toISOString(),
+    };
+
+    setMessages((current) => [...current, nextMessage]);
+
+    void fetch('/api/consultation/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId: booking.id, message: nextMessage }),
+    }).catch((error) => {
+      console.warn('Unable to save consultation chat to Supabase.', error);
+    });
   };
 
   const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
