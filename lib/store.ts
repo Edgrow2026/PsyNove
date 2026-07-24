@@ -49,6 +49,9 @@ export interface Booking {
   status: 'pending_payment' | 'paid' | 'cancelled' | 'refunded' | 'completed';
   meetingLink: string;
   clinicalNotes?: string;
+  videoRoomUsedAt?: string;
+  patientVideoRoomUsedAt?: string;
+  doctorVideoRoomUsedAt?: string;
 }
 
 export interface Complaint {
@@ -288,6 +291,13 @@ class StateStore {
   private hydrated = false;
   private databaseHydrated = false;
 
+  private mergeRecordsById<T extends { id: string }>(current: T[], incoming: T[] = []) {
+    const merged = new Map<string, T>();
+    current.forEach((record) => merged.set(record.id, record));
+    incoming.forEach((record) => merged.set(record.id, record));
+    return Array.from(merged.values());
+  }
+
   private normalizeState(state: Partial<AppState>): AppState {
     return {
       ...DEFAULT_STATE,
@@ -328,8 +338,44 @@ class StateStore {
       localStorage.setItem('psynova_store', JSON.stringify(this.state));
     }
 
+    window.addEventListener('storage', (event) => {
+      if (event.key !== 'psynova_store' || !event.newValue) return;
+
+      try {
+        this.applySharedBrowserState(JSON.parse(event.newValue));
+      } catch (error) {
+        console.warn('Unable to sync PsyNova state from another browser tab.', error);
+      }
+    });
+
     this.notify();
     void this.hydrateFromDatabase();
+  }
+
+  private applySharedBrowserState(incomingState: Partial<AppState>) {
+    const currentRole = this.state.currentRole;
+    const loggedInUserId = this.state.loggedInUserId;
+    const currentLanguage = this.state.currentLanguage;
+    const languagePreferenceSet = this.state.languagePreferenceSet;
+
+    this.state = this.normalizeState({
+      ...this.state,
+      psychiatrists: this.mergeRecordsById(this.state.psychiatrists, incomingState.psychiatrists),
+      clients: this.mergeRecordsById(this.state.clients, incomingState.clients),
+      bookings: this.mergeRecordsById(this.state.bookings, incomingState.bookings),
+      complaints: this.mergeRecordsById(this.state.complaints, incomingState.complaints),
+      smsInbox: this.mergeRecordsById(this.state.smsInbox, incomingState.smsInbox),
+      config: {
+        ...this.state.config,
+        ...(incomingState.config || {}),
+      },
+      currentRole,
+      loggedInUserId,
+      currentLanguage,
+      languagePreferenceSet,
+    });
+
+    this.notify();
   }
 
   private applyDatabaseState(snapshot: Partial<AppState>) {
@@ -680,6 +726,24 @@ class StateStore {
       );
     }
     this.save();
+  }
+
+  public markVideoRoomUsed(bookingId: string, role: 'client' | 'psychiatrist') {
+    const b = this.state.bookings.find(x => x.id === bookingId);
+    if (b) {
+      const usedAt = new Date().toISOString();
+      if (role === 'client' && !b.patientVideoRoomUsedAt) {
+        b.patientVideoRoomUsedAt = usedAt;
+      }
+      if (role === 'psychiatrist' && !b.doctorVideoRoomUsedAt) {
+        b.doctorVideoRoomUsedAt = usedAt;
+      }
+      if (!b.videoRoomUsedAt) {
+        b.videoRoomUsedAt = usedAt;
+      }
+      syncDatabaseAction('upsertBooking', b);
+      this.save();
+    }
   }
 
   public completeBooking(bookingId: string, notes: string) {

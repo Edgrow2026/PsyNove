@@ -4,7 +4,6 @@ import { supabase } from "../lib/supabase";
 
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import SimulatorSettings from "../components/SimulatorSettings";
 import PwaRegister from "../components/PwaRegister";
 import ClientRegistrationModal from "../components/booking/ClientRegistrationModal";
 import ComplaintModal from "../components/booking/ComplaintModal";
@@ -174,8 +173,8 @@ export default function HomePage() {
     const matchFee = doc.fee <= maxFee;
 
     return (
-      doc.slmcVerified &&
       !doc.deactivatedAt &&
+      doc.availableSlots.length > 0 &&
       matchSearch &&
       matchDistrict &&
       matchLanguage &&
@@ -249,24 +248,6 @@ export default function HomePage() {
     setShowRegisterFlow(false);
     setSelectedDoc(null);
     setBookingSlot(null);
-  };
-
-  const handleUseSandboxClient = () => {
-    store.setRole("client", "client-1");
-    setShowRegisterFlow(false);
-
-    if (selectedDoc && bookingSlot) {
-      const [datePart, timePart] = bookingSlot.split("T");
-      setPaymentPendingBooking({
-        docId: selectedDoc.id,
-        docName: selectedDoc.name,
-        fee: selectedDoc.fee,
-        date: datePart,
-        time: formatTimeStr(timePart),
-      });
-      setPaymentCountdown(300);
-      setShowPaymentModal(true);
-    }
   };
 
   const handleClientRegisterSubmit = async (
@@ -731,6 +712,33 @@ export default function HomePage() {
 
       {/* --- ALL MODALS & FLYOUTS (Single-screen architecture) --- */}
 
+<<<<<<< HEAD
+=======
+      {showRegisterFlow && selectedDoc && bookingSlot && (
+        <ClientRegistrationModal
+          selectedDoc={selectedDoc}
+          bookingSlot={bookingSlot}
+          districtList={districtList}
+          t={t}
+          lang={lang}
+          regName={regName}
+          regNIC={regNIC}
+          regPhone={regPhone}
+          regEmail={regEmail}
+          regDistrict={regDistrict}
+          regPassword={regPassword}
+          setRegName={setRegName}
+          setRegNIC={setRegNIC}
+          setRegPhone={setRegPhone}
+          setRegEmail={setRegEmail}
+          setRegDistrict={setRegDistrict}
+          setRegPassword={setRegPassword}
+          onClose={closeRegisterFlow}
+          onSubmit={handleClientRegisterSubmit}
+        />
+      )}
+
+>>>>>>> e559d29 (Update PsyNova real user and consultation flows)
       {showPaymentModal && paymentPendingBooking && (
         <PaymentModal
           booking={paymentPendingBooking}
@@ -750,6 +758,7 @@ export default function HomePage() {
         <VideoRoomModal
           booking={activeVideoRoom}
           lang={lang}
+          currentRole={state.currentRole}
           onClose={() => setActiveVideoRoom(null)}
         />
       )}
@@ -783,9 +792,6 @@ export default function HomePage() {
           onSubmit={handleFileComplaintSubmit}
         />
       )}
-
-      {/* Floating Sandbox Controls */}
-      <SimulatorSettings />
     </div>
   );
 }

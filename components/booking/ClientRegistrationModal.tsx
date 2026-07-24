@@ -1,7 +1,6 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
-import { LogIn } from "lucide-react";
 import { Psychiatrist } from "@/lib/store";
 import { Language, TranslationSet } from "@/lib/translations";
 import { uiCopy } from "@/lib/ui-copy";
@@ -25,7 +24,6 @@ interface ClientRegistrationModalProps {
   setRegDistrict: Dispatch<SetStateAction<string>>;
   setRegPassword: Dispatch<SetStateAction<string>>;
   onClose: () => void;
-  onUseSandboxClient: () => void;
   onSubmit: (
     event: React.SyntheticEvent<HTMLFormElement>,
   ) => void | Promise<void>;
@@ -47,7 +45,6 @@ export default function ClientRegistrationModal({
   setRegDistrict,
   setRegPassword,
   onClose,
-  onUseSandboxClient,
   onSubmit,
 }: ClientRegistrationModalProps) {
   const copy = uiCopy[lang];
@@ -73,26 +70,6 @@ export default function ClientRegistrationModal({
           >
             {copy.close}
           </button>
-        </div>
-
-        <div className="px-5 pt-4 font-sans">
-          <div className="bg-paper border border-hairline p-3.5 rounded-xl flex items-center justify-between text-xs">
-            <div className="space-y-0.5">
-              <span className="font-bold text-ink-navy block">
-                {copy.quickSandboxAccess}
-              </span>
-              <span className="text-[10px] text-slate-600">
-                {copy.quickSandboxText}
-              </span>
-            </div>
-            <button
-              onClick={onUseSandboxClient}
-              className="bg-warm-turmeric text-ink-navy text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer hover:bg-warm-turmeric/90 transition-all"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>{copy.useKavindu}</span>
-            </button>
-          </div>
         </div>
 
         <form onSubmit={onSubmit} className="p-5 space-y-4 text-xs font-sans">

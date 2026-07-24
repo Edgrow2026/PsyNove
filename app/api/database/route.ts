@@ -98,6 +98,9 @@ function bookingToRow(booking: Booking) {
     status: booking.status,
     meeting_link: booking.meetingLink,
     clinical_notes: booking.clinicalNotes || null,
+    video_room_used_at: booking.videoRoomUsedAt || null,
+    patient_video_room_used_at: booking.patientVideoRoomUsedAt || null,
+    doctor_video_room_used_at: booking.doctorVideoRoomUsedAt || null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -119,6 +122,9 @@ function rowToBooking(row: any): Booking {
     status: row.status,
     meetingLink: row.meeting_link,
     clinicalNotes: row.clinical_notes || undefined,
+    videoRoomUsedAt: row.video_room_used_at || undefined,
+    patientVideoRoomUsedAt: row.patient_video_room_used_at || undefined,
+    doctorVideoRoomUsedAt: row.doctor_video_room_used_at || undefined,
   };
 }
 

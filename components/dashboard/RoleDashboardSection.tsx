@@ -340,6 +340,29 @@ export default function RoleDashboardSection({
   const activeClient = loggedInUserId
     ? state.clients.find((client) => client.id === loggedInUserId)
     : null;
+  const activeDoctor = loggedInUserId
+    ? state.psychiatrists.find((doctor) => doctor.id === loggedInUserId)
+    : null;
+  const isActiveDoctorBooking = (booking: Booking) =>
+    Boolean(
+      loggedInUserId &&
+        (booking.psychiatristId === loggedInUserId ||
+          (activeDoctor &&
+            booking.psychiatristName.trim().toLowerCase() ===
+              activeDoctor.name.trim().toLowerCase())),
+    );
+  const visibleDoctorBookings = state.bookings
+    .filter(
+      (booking) =>
+        isActiveDoctorBooking(booking) &&
+        (booking.status === "paid" || booking.status === "completed"),
+    )
+    .sort((first, second) => {
+      if (first.status !== second.status) {
+        return first.status === "paid" ? -1 : 1;
+      }
+      return `${first.date} ${first.time}`.localeCompare(`${second.date} ${second.time}`);
+    });
   const accountIdLabel = state.currentLanguage === "ta" ? "கணக்கு ID" : state.currentLanguage === "si" ? "ගිණුම් ID" : "Account ID";
 
   return (
@@ -646,12 +669,26 @@ export default function RoleDashboardSection({
                             {booking.status === "paid" && (
                               <button
                                 onClick={() => {
+                                  store.markVideoRoomUsed(booking.id, "client");
                                   setActiveVideoRoom(booking);
                                 }}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer transition-all"
+                                disabled={Boolean(booking.patientVideoRoomUsedAt)}
+                                className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 disabled:text-slate-600 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer disabled:cursor-not-allowed transition-all"
                               >
                                 <Video className="w-3 h-3" />
-                                <span>{t.joinRoom}</span>
+                                <span>{booking.patientVideoRoomUsedAt ? "Room Used" : t.joinRoom}</span>
+                              </button>
+                            )}
+                            {booking.status === "paid" && !booking.patientVideoRoomUsedAt && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`${t.cancelBooking} #${booking.id}?`)) {
+                                    store.cancelBooking(booking.id);
+                                  }
+                                }}
+                                className="text-slate-600 hover:text-red-700 hover:underline text-[10px] font-bold block sm:inline mt-1 sm:mt-0"
+                              >
+                                {t.cancelBooking}
                               </button>
                             )}
                             {booking.status === "paid" && (
@@ -848,10 +885,7 @@ export default function RoleDashboardSection({
                   <span className="font-bold text-ink-navy">
                     {
                       state.bookings.filter(
-                        (b) =>
-                          b.psychiatristId ===
-                            (state.loggedInUserId || "psy-1") &&
-                          b.status === "completed",
+                        (b) => isActiveDoctorBooking(b) && b.status === "completed",
                       ).length
                     }
                   </span>
@@ -862,10 +896,7 @@ export default function RoleDashboardSection({
                     LKR{" "}
                     {state.bookings
                       .filter(
-                        (b) =>
-                          b.psychiatristId ===
-                            (state.loggedInUserId || "psy-1") &&
-                          b.status === "completed",
+                        (b) => isActiveDoctorBooking(b) && b.status === "completed",
                       )
                       .reduce((acc, b) => acc + (b.fee - b.commission), 0)}
                   </span>
@@ -904,12 +935,7 @@ export default function RoleDashboardSection({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-hairline bg-white">
-                    {state.bookings
-                      .filter(
-                        (b) =>
-                          b.psychiatristId ===
-                          (state.loggedInUserId || "psy-1"),
-                      )
+                    {visibleDoctorBookings
                       .map((booking) => (
                         <tr key={booking.id} className="hover:bg-paper/35">
                           <td className="px-4 py-3 font-semibold text-ink-navy">
@@ -942,18 +968,21 @@ export default function RoleDashboardSection({
                               <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end space-y-1.5 sm:space-y-0 sm:space-x-2">
                                 <button
                                   onClick={() => {
+                                    store.markVideoRoomUsed(booking.id, "psychiatrist");
                                     setActiveVideoRoom(booking);
                                   }}
-                                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer transition-all"
+                                  disabled={Boolean(booking.doctorVideoRoomUsedAt)}
+                                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 disabled:text-slate-600 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer disabled:cursor-not-allowed transition-all"
                                 >
                                   <Video className="w-3 h-3" />
-                                  <span>{copy.startConsultation}</span>
+                                  <span>{booking.doctorVideoRoomUsedAt ? "Room Used" : copy.startConsultation}</span>
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleStartConsultation(booking)
                                   }
-                                  className="bg-warm-turmeric hover:bg-warm-turmeric/90 text-ink-navy px-2.5 py-1.5 rounded-md font-bold text-[10px] cursor-pointer transition-all shadow-xs"
+                                  disabled={!booking.doctorVideoRoomUsedAt}
+                                  className="bg-warm-turmeric hover:bg-warm-turmeric/90 disabled:bg-slate-200 disabled:text-slate-500 text-ink-navy px-2.5 py-1.5 rounded-md font-bold text-[10px] cursor-pointer disabled:cursor-not-allowed transition-all shadow-xs"
                                 >
                                   {t.submitSessionReport}
                                 </button>

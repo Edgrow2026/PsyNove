@@ -9,6 +9,7 @@ import { uiCopy } from '@/lib/ui-copy';
 interface VideoRoomModalProps {
   booking: Booking;
   lang: Language;
+  currentRole: 'client' | 'psychiatrist' | 'admin' | 'superadmin' | 'guest';
   onClose: () => void;
 }
 
@@ -27,13 +28,37 @@ type ConsultationMessage = {
 
 const MAX_ATTACHMENT_BYTES = 1.5 * 1024 * 1024;
 
+function mergeMessages(
+  current: ConsultationMessage[],
+  incoming: ConsultationMessage[],
+) {
+  const merged = new Map<string, ConsultationMessage>();
+  [...current, ...incoming].forEach((message) => {
+    merged.set(message.id, message);
+  });
+
+  return Array.from(merged.values()).sort(
+    (first, second) =>
+      new Date(first.sentAt).getTime() - new Date(second.sentAt).getTime(),
+  );
+}
+
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModalProps) {
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+export default function VideoRoomModal({ booking, lang, currentRole, onClose }: VideoRoomModalProps) {
   const copy = uiCopy[lang];
   const storageKey = `psynova_consult_chat_${booking.id}`;
   const [messages, setMessages] = useState<ConsultationMessage[]>(() => {
@@ -47,8 +72,10 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
     }
   });
   const [messageText, setMessageText] = useState('');
-  const [sender, setSender] = useState<'doctor' | 'patient'>('doctor');
+  const sender: 'doctor' | 'patient' = currentRole === 'psychiatrist' ? 'doctor' : 'patient';
+  const [syncError, setSyncError] = useState('');
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,17 +89,21 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
         const result = await response.json().catch(() => ({}));
 
         if (!cancelled && response.ok && Array.isArray(result.messages)) {
-          setMessages(result.messages);
+          setMessages((current) => mergeMessages(current, result.messages));
+          setSyncError('');
         }
       } catch (error) {
         console.warn('Unable to load consultation chat from Supabase.', error);
+        if (!cancelled) setSyncError('Chat is using local backup until database reconnects.');
       }
     }
 
     void loadMessages();
+    const refreshTimer = window.setInterval(loadMessages, 2000);
 
     return () => {
       cancelled = true;
+      window.clearInterval(refreshTimer);
     };
   }, [booking.id]);
 
@@ -84,11 +115,12 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== storageKey || !event.newValue) return;
+      const storedMessages = event.newValue;
 
       try {
-        setMessages(JSON.parse(event.newValue));
+        setMessages((current) => mergeMessages(current, JSON.parse(storedMessages)));
       } catch {
-        setMessages([]);
+        setMessages((current) => current);
       }
     };
 
@@ -96,26 +128,90 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [storageKey]);
 
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return;
+
+    const channel = new BroadcastChannel(`psynova_consult_chat_${booking.id}`);
+    channelRef.current = channel;
+
+    channel.onmessage = (event: MessageEvent<ConsultationMessage>) => {
+      if (!event.data?.id) return;
+      setMessages((current) => mergeMessages(current, [event.data]));
+    };
+
+    return () => {
+      channel.close();
+      channelRef.current = null;
+    };
+  }, [booking.id]);
+
   const canDownload = messages.length > 0;
 
   const chatTranscript = useMemo(() => {
-    const lines = [
-      'PsyNova Consultation Chat Transcript',
-      `Booking: ${booking.id}`,
-      `Doctor: ${booking.psychiatristName}`,
-      `Patient: ${booking.clientName}`,
-      `Meeting: ${booking.meetingLink}`,
-      '',
-      ...messages.map((message) => {
-        const attachment = message.attachment
-          ? ` [Document: ${message.attachment.name}, ${formatFileSize(message.attachment.size)}]`
-          : '';
-        return `[${new Date(message.sentAt).toLocaleString()}] ${message.sender.toUpperCase()}: ${message.text}${attachment}`;
-      }),
-      '',
-    ];
+    const rows = messages.map((message) => {
+      const isDoctor = message.sender === 'doctor';
+      const attachment = message.attachment;
+      const attachmentHtml = attachment
+        ? `
+          <div class="attachment">
+            <strong>${escapeHtml(attachment.name)}</strong>
+            <span>${formatFileSize(attachment.size)} · ${escapeHtml(attachment.type)}</span>
+            ${
+              attachment.dataUrl
+                ? `<a href="${attachment.dataUrl}" download="${escapeHtml(attachment.name)}">Download document</a>`
+                : '<em>Document file data is unavailable in this transcript.</em>'
+            }
+          </div>
+        `
+        : '';
 
-    return lines.join('\n');
+      return `
+        <article class="message ${isDoctor ? 'doctor' : 'patient'}">
+          <div class="meta">
+            <strong>${message.sender.toUpperCase()}</strong>
+            <span>${new Date(message.sentAt).toLocaleString()}</span>
+          </div>
+          <p>${escapeHtml(message.text)}</p>
+          ${attachmentHtml}
+        </article>
+      `;
+    }).join('');
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PsyNova Chat Transcript - ${escapeHtml(booking.id)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; color: #18323a; background: #fffaf4; }
+    header { border-bottom: 1px solid #e7ded3; padding-bottom: 16px; margin-bottom: 20px; }
+    h1 { margin: 0 0 12px; font-size: 24px; }
+    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; font-size: 14px; }
+    dt { font-weight: 700; color: #60717a; }
+    dd { margin: 0; }
+    .message { border: 1px solid #eadfce; border-radius: 12px; padding: 14px; margin: 12px 0; background: #fff; }
+    .doctor { border-color: #a7f3d0; background: #ecfdf5; }
+    .patient { border-color: #fde68a; background: #fffbeb; }
+    .meta { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; color: #60717a; }
+    p { margin: 10px 0 0; }
+    .attachment { margin-top: 10px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.75); border: 1px solid rgba(24,50,58,.12); }
+    .attachment span { display: block; margin: 4px 0 8px; color: #60717a; font-size: 12px; }
+    .attachment a { color: #92400e; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PsyNova Consultation Chat Transcript</h1>
+    <dl>
+      <dt>Booking</dt><dd>${escapeHtml(booking.id)}</dd>
+      <dt>Doctor</dt><dd>${escapeHtml(booking.psychiatristName)}</dd>
+      <dt>Patient</dt><dd>${escapeHtml(booking.clientName)}</dd>
+      <dt>Meeting</dt><dd>${escapeHtml(booking.meetingLink)}</dd>
+    </dl>
+  </header>
+  <main>${rows || '<p>No chat messages were recorded.</p>'}</main>
+</body>
+</html>`;
   }, [booking, messages]);
 
   const addMessage = (message: Omit<ConsultationMessage, 'id' | 'sentAt'>) => {
@@ -125,15 +221,25 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
       sentAt: new Date().toISOString(),
     };
 
-    setMessages((current) => [...current, nextMessage]);
+    setMessages((current) => mergeMessages(current, [nextMessage]));
+    channelRef.current?.postMessage(nextMessage);
 
     void fetch('/api/consultation/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bookingId: booking.id, message: nextMessage }),
-    }).catch((error) => {
-      console.warn('Unable to save consultation chat to Supabase.', error);
-    });
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || 'Unable to save consultation chat.');
+        }
+        setSyncError('');
+      })
+      .catch((error) => {
+        console.warn('Unable to save consultation chat to Supabase.', error);
+        setSyncError('Message saved locally. Database sync failed.');
+      });
   };
 
   const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
@@ -185,11 +291,11 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
   };
 
   const handleDownloadTranscript = () => {
-    const blob = new Blob([chatTranscript], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([chatTranscript], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `psynova_chat_${booking.id}.txt`;
+    link.download = `psynova_chat_${booking.id}.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -247,29 +353,32 @@ export default function VideoRoomModal({ booking, lang, onClose }: VideoRoomModa
               </button>
             </div>
 
-            <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
-              <button
-                type="button"
-                onClick={() => setSender('doctor')}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[11px] font-bold ${
-                  sender === 'doctor'
-                    ? 'border-warm-turmeric bg-warm-turmeric/15 text-ink-navy'
-                    : 'border-hairline bg-white text-slate-600'
-                }`}
-              >
-                Doctor
-              </button>
-              <button
-                type="button"
-                onClick={() => setSender('patient')}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[11px] font-bold ${
-                  sender === 'patient'
-                    ? 'border-warm-turmeric bg-warm-turmeric/15 text-ink-navy'
-                    : 'border-hairline bg-white text-slate-600'
-                }`}
-              >
-                Patient
-              </button>
+            <div className="border-b border-hairline px-4 py-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div
+                  className={`rounded-xl border px-3 py-2 text-center text-[11px] font-bold ${
+                    sender === 'doctor'
+                      ? 'border-warm-turmeric bg-warm-turmeric/15 text-ink-navy'
+                      : 'border-hairline bg-white text-slate-600'
+                  }`}
+                >
+                  Doctor
+                </div>
+                <div
+                  className={`rounded-xl border px-3 py-2 text-center text-[11px] font-bold ${
+                    sender === 'patient'
+                      ? 'border-warm-turmeric bg-warm-turmeric/15 text-ink-navy'
+                      : 'border-hairline bg-white text-slate-600'
+                  }`}
+                >
+                  Patient
+                </div>
+              </div>
+              {syncError && (
+                <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-800">
+                  {syncError}
+                </p>
+              )}
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">

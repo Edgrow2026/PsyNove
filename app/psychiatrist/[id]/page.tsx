@@ -7,7 +7,6 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Calendar, Globe, MapPin, ShieldCheck, UserCheck } from 'lucide-react';
 import Navbar from '../../../components/Navbar';
 import PwaRegister from '../../../components/PwaRegister';
-import SimulatorSettings from '../../../components/SimulatorSettings';
 import { store, AppState } from '../../../lib/store';
 import { translations } from '../../../lib/translations';
 import { uiCopy } from '../../../lib/ui-copy';
@@ -127,8 +126,6 @@ export default function PsychiatristProfilePage() {
           </div>
         </section>
       </main>
-
-      <SimulatorSettings />
     </div>
   );
 }

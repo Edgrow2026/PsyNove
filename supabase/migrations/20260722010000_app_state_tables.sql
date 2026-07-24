@@ -47,9 +47,17 @@ create table if not exists public.app_bookings (
   status text not null check (status in ('pending_payment', 'paid', 'cancelled', 'refunded', 'completed')),
   meeting_link text not null,
   clinical_notes text,
+  video_room_used_at timestamptz,
+  patient_video_room_used_at timestamptz,
+  doctor_video_room_used_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.app_bookings
+  add column if not exists video_room_used_at timestamptz,
+  add column if not exists patient_video_room_used_at timestamptz,
+  add column if not exists doctor_video_room_used_at timestamptz;
 
 create table if not exists public.app_complaints (
   id text primary key,
