@@ -41,12 +41,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'bookingId and message are required.' }, { status: 400 });
     }
 
+    const sender = body.message.sender;
+    const text = String(body.message.text || '').trim();
+    const sentAt = body.message.sentAt ? new Date(body.message.sentAt) : new Date();
+
+    if (sender !== 'doctor' && sender !== 'patient') {
+      return NextResponse.json({ error: 'Invalid message sender.' }, { status: 400 });
+    }
+
+    if (!text) {
+      return NextResponse.json({ error: 'Message text is required.' }, { status: 400 });
+    }
+
+    if (Number.isNaN(sentAt.getTime())) {
+      return NextResponse.json({ error: 'Invalid message timestamp.' }, { status: 400 });
+    }
+
     const { error } = await getSupabaseAdmin().from('app_consultation_messages').upsert({
       id: body.message.id,
       booking_id: body.bookingId,
-      sender: body.message.sender,
-      message_text: body.message.text,
-      sent_at: body.message.sentAt,
+      sender,
+      message_text: text,
+      sent_at: sentAt.toISOString(),
       attachment: body.message.attachment || null,
     });
 

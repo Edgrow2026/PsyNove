@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
-import SimulatorSettings from '../../components/SimulatorSettings';
 import PwaRegister from '../../components/PwaRegister';
 import { store, AppState } from '../../lib/store';
 import { translations } from '../../lib/translations';
@@ -221,8 +220,6 @@ export default function TermsPage() {
       <footer className="bg-paper text-slate-500 py-6 border-t border-hairline text-center text-xs">
         <p>{termsTexts.copyright}</p>
       </footer>
-
-      <SimulatorSettings />
     </div>
   );
 }

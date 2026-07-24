@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
-import SimulatorSettings from '../../components/SimulatorSettings';
 import PwaRegister from '../../components/PwaRegister';
 import { store, AppState } from '../../lib/store';
 import { translations } from '../../lib/translations';
@@ -184,9 +183,6 @@ export default function AboutPage() {
           <p>{aboutTexts.copyright}</p>
         </div>
       </footer>
-
-      {/* Simulator Controller Panel */}
-      <SimulatorSettings />
     </div>
   );
 }

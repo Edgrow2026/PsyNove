@@ -38,9 +38,9 @@ export default function WhyChooseUs({ lang }: WhyChooseUsProps) {
           <div className="bg-warm-turmeric/10 p-3 rounded-xl w-fit">
             <Video className="w-6 h-6 text-warm-turmeric" />
           </div>
-          <h4 className="font-bold text-base text-ink-navy font-display">{copy.sandboxTools}</h4>
+          <h4 className="font-bold text-base text-ink-navy font-display">{copy.telehealthRooms}</h4>
           <p className="text-xs text-slate-600 leading-relaxed">
-            {copy.sandboxToolsText}
+            {copy.telehealthRoomsText}
           </p>
         </div>
 
